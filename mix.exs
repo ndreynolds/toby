@@ -22,7 +22,9 @@ defmodule Toby.Mixfile do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:ex_termbox, "~> 0.1.0"}
+      # {:ex_termbox, "~> 0.1.0"}
+      {:ex_termbox, path: "../ex_termbox"},
+      {:logger_file_backend, "~> 0.0.10"}
     ]
   end
 end

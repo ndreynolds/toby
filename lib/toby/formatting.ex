@@ -20,4 +20,8 @@ defmodule Toby.Formatting do
     val = float |> Float.round(2) |> Float.to_string()
     "#{val} #{suffix}"
   end
+
+  def format_func({mod, name, arity}) do
+    "#{mod}:#{name}/#{arity}"
+  end
 end
