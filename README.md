@@ -3,6 +3,9 @@
 A WIP terminal-based observer for the Erlang VM. Just an early prototype here
 so far.
 
+It's being developed in parallel with [ex_termbox][1], which renders the
+terminal and provides a view and eventing library.
+
 
 ## Usage
 
@@ -28,3 +31,4 @@ Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_do
 and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
 be found at [https://hexdocs.pm/toby](https://hexdocs.pm/toby).
 
+[1]: https://github.com/ndreynolds/ex_termbox

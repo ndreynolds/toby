@@ -4,12 +4,12 @@ defmodule Toby.Views.StatusBar do
   alias ExTermbox.Constants
 
   @default_options [
-    "System",
-    "Load Charts",
-    "Memory Allocators",
-    "Applications",
-    "Processes",
-    "Ports"
+    {:system, "[S]ystem"},
+    {:load, "[L]oad Charts"},
+    {:memory, "[M]emory Allocators"},
+    {:application, "[A]pplications"},
+    {:process, "[P]rocesses"},
+    {:ports, "Po[r]ts"}
   ]
 
   @style_selected %{
@@ -17,22 +17,25 @@ defmodule Toby.Views.StatusBar do
   }
 
   def render(%{options: options} = attrs) do
-    element(:status_bar, [
+    bar do
       element(:text_group, render_options(options, attrs[:selected]))
-    ])
+    end
   end
 
   def render(%{} = attrs),
     do: attrs |> Map.merge(%{options: @default_options}) |> render()
 
-  defp render_options(options, selected_option) do
-    options
-    |> Enum.map(&render_option(&1, &1 == selected_option))
-    |> Enum.intersperse(whitespace())
-  end
+  defp render_options(options, selected) do
+    rendered_options =
+      for {key, label} <- options do
+        if key == selected do
+          element(:text, @style_selected, [label])
+        else
+          element(:text, [label])
+        end
+      end
 
-  defp render_option(name, selected) do
-    element(:text, if(selected, do: @style_selected, else: %{}), [name])
+    Enum.intersperse(rendered_options, whitespace())
   end
 
   defp whitespace, do: element(:text, ["  "])

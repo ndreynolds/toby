@@ -23,7 +23,7 @@ defmodule Toby.Console do
   end
 
   def loop(view_fn, %{cursor: cursor} = state) do
-    ExTermbox.Window.update(view_fn.(state))
+    :ok = ExTermbox.Window.update(view_fn.(state))
 
     receive do
       {:event, %Event{ch: ?q}} ->

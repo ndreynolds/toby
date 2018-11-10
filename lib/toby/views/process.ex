@@ -20,12 +20,12 @@ defmodule Toby.Views.Process do
       |> Enum.with_index()
       |> Enum.map(fn {proc, idx} -> Map.merge(proc, %{selected: idx == selected_idx}) end)
 
-    view do
+    status_bar = StatusBar.render(%{selected: :process})
+
+    view(bottom_bar: status_bar) do
       panel(title: "Processes", height: :fill) do
         element(:table, [header_row() | process_rows(processes)])
       end
-
-      StatusBar.render(%{selected: "Processes"})
     end
   end
 
