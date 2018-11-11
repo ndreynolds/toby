@@ -1,17 +1,18 @@
 defmodule Toby.Views.Process do
+  import ExTermbox.Constants, only: [attribute: 1, color: 1]
   import ExTermbox.Renderer.View
+
   import Toby.Formatting, only: [format_func: 1]
 
-  alias ExTermbox.Constants
   alias Toby.Views.StatusBar
 
   @style_header %{
-    attributes: [Constants.attribute(:bold)]
+    attributes: [attribute(:bold)]
   }
 
   @style_selected %{
-    color: Constants.color(:black),
-    background: Constants.color(:white)
+    color: color(:black),
+    background: color(:white)
   }
 
   def render(%{processes: processes, selected_index: selected_idx}) do
@@ -24,7 +25,9 @@ defmodule Toby.Views.Process do
 
     view(bottom_bar: status_bar) do
       panel(title: "Processes", height: :fill) do
-        element(:table, [header_row() | process_rows(processes)])
+        table do
+          [header_row() | process_rows(processes)]
+        end
       end
     end
   end

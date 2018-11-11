@@ -18,25 +18,28 @@ defmodule Toby.Views.StatusBar do
 
   def render(%{options: options} = attrs) do
     bar do
-      element(:text_group, render_options(options, attrs[:selected]))
+      label do
+        render_options(options, attrs[:selected])
+      end
     end
   end
 
-  def render(%{} = attrs),
-    do: attrs |> Map.merge(%{options: @default_options}) |> render()
+  def render(%{} = attrs) do
+    attrs
+    |> Map.merge(%{options: @default_options})
+    |> render()
+  end
 
   defp render_options(options, selected) do
     rendered_options =
       for {key, label} <- options do
         if key == selected do
-          element(:text, @style_selected, [label])
+          text(@style_selected, label)
         else
-          element(:text, [label])
+          text(label)
         end
       end
 
-    Enum.intersperse(rendered_options, whitespace())
+    Enum.intersperse(rendered_options, text(" "))
   end
-
-  defp whitespace, do: element(:text, ["  "])
 end
