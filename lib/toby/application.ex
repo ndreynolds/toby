@@ -7,7 +7,8 @@ defmodule Toby.Application do
     children = [
       worker(ExTermbox.Window, []),
       worker(ExTermbox.EventManager, []),
-      Toby.Console
+      Toby.Console,
+      Toby.Stats.Server
     ]
 
     Supervisor.start_link(

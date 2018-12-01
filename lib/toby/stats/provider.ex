@@ -1,4 +1,4 @@
-defmodule Toby.Statistics do
+defmodule Toby.Stats.Provider do
   def processes do
     for pid <- :erlang.processes() do
       Enum.into(:erlang.process_info(pid), %{
@@ -12,7 +12,10 @@ defmodule Toby.Statistics do
     ac_pid = :erlang.whereis(:application_controller)
     {:links, _apps} = :erlang.process_info(ac_pid, :links)
 
-    :application.loaded_applications() |> Enum.map(&elem(&1, 0))
+    Enum.map(
+      :application.loaded_applications(),
+      &elem(&1, 0)
+    )
   end
 
   def system do

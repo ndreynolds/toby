@@ -19,16 +19,64 @@ defmodule Toby.Views.Process do
     processes =
       processes
       |> Enum.with_index()
-      |> Enum.map(fn {proc, idx} -> Map.merge(proc, %{selected: idx == selected_idx}) end)
+      |> Enum.map(fn {proc, idx} ->
+        Map.merge(proc, %{selected: idx == selected_idx})
+      end)
+
+    selected = Enum.find(processes, fn proc -> proc.selected end)
 
     status_bar = StatusBar.render(%{selected: :process})
 
     view(bottom_bar: status_bar) do
-      panel(title: "Processes", height: :fill) do
-        table do
-          [header_row() | process_rows(processes)]
+      row do
+        column(size: 8) do
+          panel(title: "Processes", height: :fill) do
+            table do
+              header_row()
+              for proc <- processes, do: process_row(proc)
+            end
+          end
+        end
+
+        column(size: 4) do
+          process_overview(selected)
         end
       end
+    end
+  end
+
+  defp process_overview(%{pid: pid} = process) do
+    title = inspect(pid) <> " " <> name_or_initial_func(process)
+
+    panel(title: title, height: :fill) do
+      table do
+        table_row(["Initial Call", format_func(process.initial_call)])
+        table_row(["Current Function", format_func(process.current_function)])
+        table_row(["Registered Name", to_string(process[:registered_name])])
+        table_row(["Status", to_string(process[:status])])
+        table_row(["Message Queue Len", to_string(process[:message_queue_len])])
+        table_row(["Group Leader", inspect(process[:group_leader])])
+        table_row(["Priority", to_string(process[:priority])])
+        table_row(["Trap Exit", to_string(process[:trap_exit])])
+        table_row(["Reductions", to_string(process[:reductions])])
+        table_row(["Error Handler", to_string(process[:error_handler])])
+        table_row(["Trace", to_string(process[:trace])])
+      end
+
+      label("")
+      label("Links (#{length(process.links)})")
+      process_links(process)
+    end
+  end
+
+  defp process_overview(nil) do
+    panel(title: "(None selected)", height: :fill) do
+    end
+  end
+
+  defp process_links(%{links: links}) do
+    table do
+      for link <- links, do: table_row([inspect(link)])
     end
   end
 
@@ -41,10 +89,6 @@ defmodule Toby.Views.Process do
       "MsgQ",
       "Current Function"
     ])
-  end
-
-  defp process_rows(processes) do
-    processes |> Enum.map(&process_row/1)
   end
 
   defp process_row(process) do

@@ -4,10 +4,14 @@ defmodule Toby.Console do
 
   alias ExTermbox.{Window, Event, EventManager}
 
-  alias Toby.Statistics
+  alias Toby.Stats.Server, as: Stats
+
   alias Toby.Views.Application, as: ApplicationView
-  alias Toby.Views.System, as: SystemView
+  alias Toby.Views.Load, as: LoadView
+  alias Toby.Views.Memory, as: MemoryView
+  alias Toby.Views.Port, as: PortView
   alias Toby.Views.Process, as: ProcessView
+  alias Toby.Views.System, as: SystemView
 
   @interval_ms 500
 
@@ -33,11 +37,20 @@ defmodule Toby.Console do
       {:event, %Event{ch: ?s}} ->
         loop(&system_view/1, state)
 
-      {:event, %Event{ch: ?p}} ->
-        loop(&process_view/1, state)
+      {:event, %Event{ch: ?l}} ->
+        loop(&load_view/1, state)
+
+      {:event, %Event{ch: ?m}} ->
+        loop(&memory_view/1, state)
 
       {:event, %Event{ch: ?a}} ->
         loop(&application_view/1, state)
+
+      {:event, %Event{ch: ?p}} ->
+        loop(&process_view/1, state)
+
+      {:event, %Event{ch: ?r}} ->
+        loop(&port_view/1, state)
 
       {:event, %Event{ch: ?j}} ->
         loop(view_fn, %{cursor: cursor + 1})
@@ -60,21 +73,33 @@ defmodule Toby.Console do
 
   def system_view(_state) do
     SystemView.render(%{
-      system: Statistics.system(),
-      memory: Statistics.memory()
+      system: Stats.fetch(:system),
+      memory: Stats.fetch(:memory)
     })
+  end
+
+  def load_view(_state) do
+    LoadView.render(%{})
+  end
+
+  def memory_view(_state) do
+    MemoryView.render(%{})
   end
 
   def application_view(_state) do
     ApplicationView.render(%{
-      applications: Statistics.applications()
+      applications: Stats.fetch(:applications)
     })
   end
 
   def process_view(%{cursor: cursor}) do
     ProcessView.render(%{
-      processes: Statistics.processes(),
+      processes: Stats.fetch(:processes),
       selected_index: cursor
     })
+  end
+
+  def port_view(_state) do
+    PortView.render(%{})
   end
 end

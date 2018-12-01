@@ -9,7 +9,7 @@ defmodule Toby.Views.StatusBar do
     {:memory, "[M]emory Allocators"},
     {:application, "[A]pplications"},
     {:process, "[P]rocesses"},
-    {:ports, "Po[r]ts"}
+    {:port, "Po[r]ts"}
   ]
 
   @style_selected %{

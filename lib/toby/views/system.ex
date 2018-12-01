@@ -29,7 +29,12 @@ defmodule Toby.Views.System do
             table do
               table_row(["total", humanize_bytes(memory.total)])
               table_row(["processes", humanize_bytes(memory.processes)])
-              table_row(["processes (used)", humanize_bytes(memory.processes_used)])
+
+              table_row([
+                "processes (used)",
+                humanize_bytes(memory.processes_used)
+              ])
+
               table_row(["system", humanize_bytes(memory.system)])
               table_row(["atoms", humanize_bytes(memory.atom)])
               table_row(["atoms (used)", humanize_bytes(memory.atom_used)])

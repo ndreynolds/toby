@@ -18,7 +18,8 @@ use Mix.Config
 #
 # You can also configure a 3rd-party app:
 
-config :logger, format: "[$level] $message\n",
+config :logger,
+  format: "[$level] $message\n",
   backends: [{LoggerFileBackend, :debug_log}]
 
 config :logger, :debug_log,
