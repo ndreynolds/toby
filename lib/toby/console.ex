@@ -1,17 +1,20 @@
 defmodule Toby.Console do
+  @moduledoc """
+  A task that runs the main terminal application loop and holds on to
+  application state.
+  """
+
   use Task, restart: :transient
   require Logger
 
-  alias ExTermbox.{Window, Event, EventManager}
+  alias ExTermbox.{Event, EventManager, Window}
 
-  alias Toby.Stats.Server, as: Stats
-
-  alias Toby.Views.Application, as: ApplicationView
-  alias Toby.Views.Load, as: LoadView
-  alias Toby.Views.Memory, as: MemoryView
-  alias Toby.Views.Port, as: PortView
-  alias Toby.Views.Process, as: ProcessView
-  alias Toby.Views.System, as: SystemView
+  alias Toby.Components.Application, as: ApplicationComponent
+  alias Toby.Components.Load, as: LoadComponent
+  alias Toby.Components.Memory, as: MemoryComponent
+  alias Toby.Components.Port, as: PortComponent
+  alias Toby.Components.Process, as: ProcessComponent
+  alias Toby.Components.System, as: SystemComponent
 
   @interval_ms 500
 
@@ -22,12 +25,16 @@ defmodule Toby.Console do
   def run do
     Logger.info("starting console")
     EventManager.subscribe(self())
-    state = %{cursor: 0}
-    loop(&system_view/1, state)
+    loop(SystemComponent, %{})
   end
 
-  def loop(view_fn, %{cursor: cursor} = state) do
-    :ok = ExTermbox.Window.update(view_fn.(state))
+  def loop(component, init_state) do
+    {:ok, state} =
+      init_state
+      |> Map.put(:window, window_info())
+      |> component.tick()
+
+    :ok = Window.update(component.render(state))
 
     receive do
       {:event, %Event{ch: ?q}} ->
@@ -35,71 +42,39 @@ defmodule Toby.Console do
         shutdown()
 
       {:event, %Event{ch: ?s}} ->
-        loop(&system_view/1, state)
+        loop(SystemComponent, state)
 
       {:event, %Event{ch: ?l}} ->
-        loop(&load_view/1, state)
+        loop(LoadComponent, state)
 
       {:event, %Event{ch: ?m}} ->
-        loop(&memory_view/1, state)
+        loop(MemoryComponent, state)
 
       {:event, %Event{ch: ?a}} ->
-        loop(&application_view/1, state)
+        loop(ApplicationComponent, state)
 
       {:event, %Event{ch: ?p}} ->
-        loop(&process_view/1, state)
+        loop(ProcessComponent, state)
 
       {:event, %Event{ch: ?r}} ->
-        loop(&port_view/1, state)
+        loop(PortComponent, state)
 
-      {:event, %Event{ch: ?j}} ->
-        loop(view_fn, %{cursor: cursor + 1})
-
-      {:event, %Event{ch: ?k}} ->
-        loop(view_fn, %{cursor: cursor - 1})
-
-      {:event, %Event{}} ->
-        loop(view_fn, state)
+      {:event, event} ->
+        {:ok, new_state} = component.handle_event(event, state)
+        loop(component, new_state)
     after
       @interval_ms ->
-        loop(view_fn, state)
+        loop(component, state)
     end
+  end
+
+  def window_info do
+    {:ok, height} = Window.fetch(:height)
+    %{height: height}
   end
 
   def shutdown do
     Window.close()
     System.halt()
-  end
-
-  def system_view(_state) do
-    SystemView.render(%{
-      system: Stats.fetch(:system),
-      memory: Stats.fetch(:memory)
-    })
-  end
-
-  def load_view(_state) do
-    LoadView.render(%{})
-  end
-
-  def memory_view(_state) do
-    MemoryView.render(%{})
-  end
-
-  def application_view(_state) do
-    ApplicationView.render(%{
-      applications: Stats.fetch(:applications)
-    })
-  end
-
-  def process_view(%{cursor: cursor}) do
-    ProcessView.render(%{
-      processes: Stats.fetch(:processes),
-      selected_index: cursor
-    })
-  end
-
-  def port_view(_state) do
-    PortView.render(%{})
   end
 end

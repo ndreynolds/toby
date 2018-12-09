@@ -1,4 +1,8 @@
 defmodule Toby.Formatting do
+  @moduledoc """
+  Provides formatting helpers for various values.
+  """
+
   @bytes %{
     terabyte: :math.pow(1024, 4),
     gigabyte: :math.pow(1024, 3),

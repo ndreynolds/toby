@@ -1,8 +1,25 @@
-defmodule Toby.Views.System do
+defmodule Toby.Components.System do
+  @moduledoc """
+  A component that displays summarized information about the Erlang VM.
+  """
+
+  @behaviour Toby.Component
+
   import Toby.Formatting
   import ExTermbox.Renderer.View
 
-  alias Toby.Views.StatusBar
+  alias Toby.Components.StatusBar
+  alias Toby.Stats.Server, as: Stats
+
+  def handle_event(_event, state), do: {:ok, state}
+
+  def tick(_state) do
+    {:ok,
+     %{
+       system: Stats.fetch(:system),
+       memory: Stats.fetch(:memory)
+     }}
+  end
 
   def render(%{system: system, memory: memory}) do
     status_bar = StatusBar.render(%{selected: :system})

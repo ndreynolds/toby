@@ -1,7 +1,20 @@
-defmodule Toby.Views.Application do
+defmodule Toby.Components.Application do
+  @moduledoc """
+  A component for displaying information about OTP applications
+  """
+
+  @behaviour Toby.Component
+
   import ExTermbox.Renderer.View
 
-  alias Toby.Views.StatusBar
+  alias Toby.Components.StatusBar
+  alias Toby.Stats.Server, as: Stats
+
+  def handle_event(_event, state), do: {:ok, state}
+
+  def tick(_state) do
+    {:ok, %{applications: Stats.fetch(:applications)}}
+  end
 
   def render(%{applications: apps}) do
     status_bar = StatusBar.render(%{selected: :application})

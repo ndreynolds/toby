@@ -1,16 +1,24 @@
 defmodule Toby.Stats.Provider do
+  @moduledoc """
+  Provides statistics about the running Erlang VM for display in components.
+
+  Since these lookups can be expensive, access this data via `Toby.Stats.Server`
+  instead of calling this module directly. The server module provides a
+  throttled interface to this data to avoid overwhelming the system.
+  """
+
   def processes do
     for pid <- :erlang.processes() do
       Enum.into(:erlang.process_info(pid), %{
         pid: pid,
-        memory: :erlang.process_info(pid, :memory) |> elem(1)
+        memory: pid |> :erlang.process_info(:memory) |> elem(1)
       })
     end
   end
 
   def applications do
-    ac_pid = :erlang.whereis(:application_controller)
-    {:links, _apps} = :erlang.process_info(ac_pid, :links)
+    app_controller = :erlang.whereis(:application_controller)
+    {:links, _apps} = :erlang.process_info(app_controller, :links)
 
     Enum.map(
       :application.loaded_applications(),

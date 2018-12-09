@@ -1,10 +1,19 @@
-defmodule Toby.Views.Process do
-  import ExTermbox.Constants, only: [attribute: 1, color: 1]
+defmodule Toby.Components.Process do
+  @moduledoc """
+  A component for displaying information about processes
+  """
+
+  @behaviour Toby.Component
+
+  import ExTermbox.Constants, only: [attribute: 1, color: 1, key: 1]
   import ExTermbox.Renderer.View
 
   import Toby.Formatting, only: [format_func: 1]
 
-  alias Toby.Views.StatusBar
+  alias ExTermbox.Event
+
+  alias Toby.Components.StatusBar
+  alias Toby.Stats.Server, as: Stats
 
   @style_header %{
     attributes: [attribute(:bold)]
@@ -15,13 +24,43 @@ defmodule Toby.Views.Process do
     background: color(:white)
   }
 
-  def render(%{processes: processes, selected_index: selected_idx}) do
+  @arrow_up key(:arrow_up)
+  @arrow_down key(:arrow_down)
+
+  def handle_event(
+        %Event{ch: ch, key: key},
+        %{selected_index: cursor, processes: processes} = state
+      )
+      when ch == ?j or key == @arrow_down do
+    {:ok, %{state | selected_index: min(cursor + 1, length(processes) - 1)}}
+  end
+
+  def handle_event(
+        %Event{ch: ch, key: key},
+        %{selected_index: cursor} = state
+      )
+      when ch == ?k or key == @arrow_up do
+    {:ok, %{state | selected_index: max(cursor - 1, 0)}}
+  end
+
+  def handle_event(_event, state), do: {:ok, state}
+
+  def tick(state) do
+    {:ok,
+     Map.merge(state, %{
+       selected_index: state[:selected_index] || 0,
+       processes: Stats.fetch(:processes)
+     })}
+  end
+
+  def render(%{processes: processes, selected_index: selected_idx, window: %{height: height}}) do
     processes =
       processes
       |> Enum.with_index()
       |> Enum.map(fn {proc, idx} ->
         Map.merge(proc, %{selected: idx == selected_idx})
       end)
+      |> slice(height - 12, selected_idx)
 
     selected = Enum.find(processes, fn proc -> proc.selected end)
 
@@ -103,6 +142,16 @@ defmodule Toby.Views.Process do
         format_func(process.current_function)
       ]
     )
+  end
+
+  defp slice(processes, n, idx) when idx < n do
+    Enum.take(processes, n)
+  end
+
+  defp slice(processes, n, idx) do
+    processes
+    |> Enum.drop(idx - n + 1)
+    |> Enum.take(n)
   end
 
   defp name_or_initial_func(process) do

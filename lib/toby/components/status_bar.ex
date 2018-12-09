@@ -1,4 +1,10 @@
-defmodule Toby.Views.StatusBar do
+defmodule Toby.Components.StatusBar do
+  @moduledoc """
+  A component that displays the status bar for navigation between views.
+  """
+
+  @behaviour Toby.Component
+
   import ExTermbox.Renderer.View
 
   alias ExTermbox.Constants
@@ -15,6 +21,10 @@ defmodule Toby.Views.StatusBar do
   @style_selected %{
     attributes: [Constants.attribute(:bold)]
   }
+
+  def handle_event(_, state), do: {:ok, state}
+
+  def tick(state), do: {:ok, state}
 
   def render(%{options: options} = attrs) do
     bar do

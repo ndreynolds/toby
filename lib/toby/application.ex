@@ -1,4 +1,8 @@
 defmodule Toby.Application do
+  @moduledoc """
+  Defines the supervision tree for the application
+  """
+
   use Application
 
   def start(_type, _args) do
