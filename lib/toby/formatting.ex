@@ -67,9 +67,12 @@ defmodule Toby.Formatting do
     end
   end
 
-  def format_bytes(float, suffix) do
-    val = float |> Float.round(2) |> Float.to_string()
-    "#{val} #{suffix}"
+  def format_bytes(bytes, suffix) when is_float(bytes) do
+    format_bytes(bytes |> Float.round(2) |> Float.to_string(), suffix)
+  end
+
+  def format_bytes(bytes, suffix) when is_binary(bytes) or is_integer(bytes) do
+    "#{bytes} #{suffix}"
   end
 
   def format_func({mod, name, arity}) do
