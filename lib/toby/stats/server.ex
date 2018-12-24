@@ -8,7 +8,7 @@ defmodule Toby.Stats.Server do
 
   alias Toby.Stats.Provider
 
-  @cache_ms 1000
+  @cache_ms 2000
 
   def start_link(_) do
     GenServer.start_link(__MODULE__, :ok, name: __MODULE__)
@@ -53,10 +53,13 @@ defmodule Toby.Stats.Server do
 
   defp compute(name) do
     case name do
-      :processes -> Provider.processes()
       :applications -> Provider.applications()
-      :system -> Provider.system()
+      :cpu -> Provider.cpu()
+      :limits -> Provider.limits()
       :memory -> Provider.memory()
+      :processes -> Provider.processes()
+      :statistics -> Provider.statistics()
+      :system -> Provider.system()
     end
   end
 
