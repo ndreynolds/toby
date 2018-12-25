@@ -3,7 +3,7 @@ defmodule Toby.Components.Memory do
   TODO: A component for displaying information about memory usage
   """
 
-  @behaviour Toby.Component
+  @behaviour Toby.Component.Stateful
 
   import ExTermbox.Renderer.View
 

@@ -1,14 +1,15 @@
-defmodule Toby.Component do
+defmodule Toby.Component.Stateful do
   @moduledoc """
-  Defines the behaviour for a view component.
+  Defines the behaviour for a stateful view component.
 
   These components are inspired by React components. A module implementing the
-  `Toby.Component` behaviour provides functions to transform state based on
-  events and ticks, as well as a function to render an `ExTermbox.View` based
-  on the state.
+  `Toby.Component.Stateful` behaviour provides functions to transform state
+  based on events and ticks, as well as a function to render an `ExTermbox.View`
+  based on the state.
 
-  Components don't directly hold any state themselves, they only know how to use
-  and transform it. The state should be stored in the main application loop.
+  Note that stateful components don't directly hold any state themselves, they
+  only know how to use and transform it. The state should be stored in the main
+  application loop.
   """
 
   alias ExTermbox.{Event, View}

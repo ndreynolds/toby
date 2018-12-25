@@ -7,72 +7,101 @@ defmodule Toby.Stats.Provider do
   throttled interface to this data to avoid overwhelming the system.
   """
 
-  def processes do
-    for pid <- :erlang.processes() do
-      Enum.into(:erlang.process_info(pid), %{
-        pid: pid,
-        memory: pid |> :erlang.process_info(:memory) |> elem(1)
-      })
-    end
+  alias Toby.Stats.Applications
+
+  def provide(:processes) do
+    {:ok, for(pid <- :erlang.processes(), do: extended_process_info(pid))}
   end
 
-  def applications do
-    app_controller = :erlang.whereis(:application_controller)
-    {:links, _apps} = :erlang.process_info(app_controller, :links)
-
-    Enum.map(
-      :application.loaded_applications(),
-      &elem(&1, 0)
-    )
+  def provide(:ports) do
+    {:ok, for(port <- :erlang.ports(), do: extended_port_info(port))}
   end
 
-  def system do
-    %{
-      otp_release: system_info(:otp_release),
-      erts_version: system_info(:version),
-      compiled_for: system_info(:system_architecture),
-      emulator_wordsize: system_info({:wordsize, :internal}),
-      process_wordsize: system_info({:wordsize, :external}),
-      smp_support?: system_info(:smp_support),
-      thread_support?: system_info(:threads),
-      async_thread_pool_size: system_info(:thread_pool_size)
-    }
+  def provide(:applications), do: Applications.applications()
+
+  def provide({:application, app}), do: Applications.application(app)
+
+  def provide(:system) do
+    {:ok,
+     %{
+       otp_release: system_info(:otp_release),
+       erts_version: system_info(:version),
+       compiled_for: system_info(:system_architecture),
+       emulator_wordsize: system_info({:wordsize, :internal}),
+       process_wordsize: system_info({:wordsize, :external}),
+       smp_support?: system_info(:smp_support),
+       thread_support?: system_info(:threads),
+       async_thread_pool_size: system_info(:thread_pool_size)
+     }}
   end
 
-  def cpu do
-    %{
-      logical_cpus: :erlang.system_info(:logical_processors),
-      online_logical_cpus: :erlang.system_info(:logical_processors),
-      available_logical_cpus: :erlang.system_info(:logical_processors),
-      schedulers: :erlang.system_info(:schedulers),
-      online_schedulers: :erlang.system_info(:schedulers_online),
-      available_schedulers: :erlang.system_info(:schedulers_online)
-    }
+  def provide(:cpu) do
+    {:ok,
+     %{
+       logical_cpus: :erlang.system_info(:logical_processors),
+       online_logical_cpus: :erlang.system_info(:logical_processors),
+       available_logical_cpus: :erlang.system_info(:logical_processors),
+       schedulers: :erlang.system_info(:schedulers),
+       online_schedulers: :erlang.system_info(:schedulers_online),
+       available_schedulers: :erlang.system_info(:schedulers_online)
+     }}
   end
 
-  def limits do
-    %{
-      atoms: limit(system_info(:atom_count), system_info(:atom_limit)),
-      procs: limit(system_info(:process_count), system_info(:process_limit)),
-      ports: limit(system_info(:port_count), system_info(:port_limit)),
-      ets: limit(system_info(:ets_count), system_info(:ets_limit)),
-      dist_buffer_busy: system_info(:dist_buf_busy_limit)
-    }
+  def provide(:limits) do
+    {:ok,
+     %{
+       atoms: limit(system_info(:atom_count), system_info(:atom_limit)),
+       procs: limit(system_info(:process_count), system_info(:process_limit)),
+       ports: limit(system_info(:port_count), system_info(:port_limit)),
+       ets: limit(system_info(:ets_count), system_info(:ets_limit)),
+       dist_buffer_busy: system_info(:dist_buf_busy_limit)
+     }}
   end
 
-  def statistics do
+  def provide(:statistics) do
     {{:input, io_input}, {:output, io_output}} = :erlang.statistics(:io)
 
-    %{
-      uptime_ms: uptime_ms(),
-      run_queue: :erlang.statistics(:total_run_queue_lengths),
-      io_input_bytes: io_input,
-      io_output_bytes: io_output
-    }
+    {:ok,
+     %{
+       uptime_ms: uptime_ms(),
+       run_queue: :erlang.statistics(:total_run_queue_lengths),
+       io_input_bytes: io_input,
+       io_output_bytes: io_output
+     }}
   end
 
-  def memory do
-    Enum.into(:erlang.memory(), %{})
+  def provide(:memory) do
+    {:ok, Enum.into(:erlang.memory(), %{})}
+  end
+
+  def provide(_other_key) do
+    {:error, :invalid_key}
+  end
+
+  def extended_process_info(pid) do
+    {:memory, memory} = :erlang.process_info(pid, :memory)
+
+    pid
+    |> process_info()
+    |> Enum.into(%{
+      pid: pid,
+      memory: memory
+    })
+  end
+
+  def extended_port_info(port) do
+    case :erlang.port_info(port) do
+      :undefined ->
+        %{}
+
+      info ->
+        info
+        |> Enum.into(%{})
+        |> Map.merge(%{
+          id: port,
+          slot: info[:id]
+        })
+    end
   end
 
   defp limit(count, limit) do
@@ -87,5 +116,6 @@ defmodule Toby.Stats.Provider do
     total_ms
   end
 
+  defp process_info(pid), do: :erlang.process_info(pid)
   defp system_info(key), do: :erlang.system_info(key)
 end

@@ -3,7 +3,7 @@ defmodule Toby.Components.Load do
   TODO: A component for displaying information about system load
   """
 
-  @behaviour Toby.Component
+  @behaviour Toby.Component.Stateful
 
   import ExTermbox.Renderer.View
 

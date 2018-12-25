@@ -3,7 +3,7 @@ defmodule Toby.Components.Process do
   A component for displaying information about processes
   """
 
-  @behaviour Toby.Component
+  @behaviour Toby.Component.Stateful
 
   import ExTermbox.Constants, only: [attribute: 1, color: 1, key: 1]
   import ExTermbox.Renderer.View
@@ -12,7 +12,8 @@ defmodule Toby.Components.Process do
 
   alias ExTermbox.Event
 
-  alias Toby.Components.StatusBar
+  alias Toby.Components.{Links, StatusBar}
+  alias Toby.Selection
   alias Toby.Stats.Server, as: Stats
 
   @style_header %{
@@ -29,18 +30,18 @@ defmodule Toby.Components.Process do
 
   def handle_event(
         %Event{ch: ch, key: key},
-        %{selected_index: cursor, processes: processes} = state
+        %{process_cursor: cursor, processes: processes} = state
       )
       when ch == ?j or key == @arrow_down do
-    {:ok, %{state | selected_index: min(cursor + 1, length(processes) - 1)}}
+    {:ok, %{state | process_cursor: min(cursor + 1, length(processes) - 1)}}
   end
 
   def handle_event(
         %Event{ch: ch, key: key},
-        %{selected_index: cursor} = state
+        %{process_cursor: cursor} = state
       )
       when ch == ?k or key == @arrow_up do
-    {:ok, %{state | selected_index: max(cursor - 1, 0)}}
+    {:ok, %{state | process_cursor: max(cursor - 1, 0)}}
   end
 
   def handle_event(_event, state), do: {:ok, state}
@@ -48,21 +49,15 @@ defmodule Toby.Components.Process do
   def tick(state) do
     {:ok,
      Map.merge(state, %{
-       selected_index: state[:selected_index] || 0,
-       processes: Stats.fetch(:processes)
+       process_cursor: state[:process_cursor] || 0,
+       processes: Stats.fetch!(:processes)
      })}
   end
 
-  def render(%{processes: processes, selected_index: selected_idx, window: %{height: height}}) do
-    processes =
-      processes
-      |> Enum.with_index()
-      |> Enum.map(fn {proc, idx} ->
-        Map.merge(proc, %{selected: idx == selected_idx})
-      end)
-      |> slice(height - 12, selected_idx)
+  def render(%{processes: all_processes, process_cursor: cursor, window: %{height: height}}) do
+    processes = Selection.slice(all_processes, height - 12, cursor)
 
-    selected = Enum.find(processes, fn proc -> proc.selected end)
+    selected = Enum.at(all_processes, cursor)
 
     status_bar = StatusBar.render(%{selected: :process})
 
@@ -71,20 +66,40 @@ defmodule Toby.Components.Process do
         column(size: 8) do
           panel(title: "Processes", height: :fill) do
             table do
-              header_row()
-              for proc <- processes, do: process_row(proc)
+              table_row(@style_header, [
+                "PID",
+                "Name or Initial Func",
+                "Reds",
+                "Memory",
+                "MsgQ",
+                "Current Function"
+              ])
+
+              for proc <- processes do
+                table_row(
+                  if(proc == selected, do: @style_selected, else: %{}),
+                  [
+                    inspect(proc.pid),
+                    name_or_initial_func(proc),
+                    to_string(proc.reductions),
+                    inspect(proc.memory),
+                    to_string(proc.message_queue_len),
+                    format_func(proc.current_function)
+                  ]
+                )
+              end
             end
           end
         end
 
         column(size: 4) do
-          process_overview(selected)
+          render_process_details(selected)
         end
       end
     end
   end
 
-  defp process_overview(%{pid: pid} = process) do
+  defp render_process_details(%{pid: pid} = process) do
     title = inspect(pid) <> " " <> name_or_initial_func(process)
 
     panel(title: title, height: :fill) do
@@ -103,55 +118,12 @@ defmodule Toby.Components.Process do
       end
 
       label("")
-      label("Links (#{length(process.links)})")
-      process_links(process)
+      Links.render(process.links)
     end
   end
 
-  defp process_overview(nil) do
-    panel(title: "(None selected)", height: :fill) do
-    end
-  end
-
-  defp process_links(%{links: links}) do
-    table do
-      for link <- links, do: table_row([inspect(link)])
-    end
-  end
-
-  defp header_row do
-    table_row(@style_header, [
-      "PID",
-      "Name or Initial Func",
-      "Reds",
-      "Memory",
-      "MsgQ",
-      "Current Function"
-    ])
-  end
-
-  defp process_row(process) do
-    table_row(
-      if(process.selected, do: @style_selected, else: %{}),
-      [
-        inspect(process.pid),
-        name_or_initial_func(process),
-        to_string(process.reductions),
-        inspect(process.memory),
-        to_string(process.message_queue_len),
-        format_func(process.current_function)
-      ]
-    )
-  end
-
-  defp slice(processes, n, idx) when idx < n do
-    Enum.take(processes, n)
-  end
-
-  defp slice(processes, n, idx) do
-    processes
-    |> Enum.drop(idx - n + 1)
-    |> Enum.take(n)
+  defp render_process_details(nil) do
+    panel(title: "(None selected)", height: :fill)
   end
 
   defp name_or_initial_func(process) do

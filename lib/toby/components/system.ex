@@ -3,7 +3,7 @@ defmodule Toby.Components.System do
   A component that displays summarized information about the Erlang VM.
   """
 
-  @behaviour Toby.Component
+  @behaviour Toby.Component.Stateful
 
   import Toby.Formatting
   import ExTermbox.Renderer.View
@@ -16,11 +16,11 @@ defmodule Toby.Components.System do
   def tick(_state) do
     {:ok,
      %{
-       cpu: Stats.fetch(:cpu),
-       limits: Stats.fetch(:limits),
-       memory: Stats.fetch(:memory),
-       statistics: Stats.fetch(:statistics),
-       system: Stats.fetch(:system)
+       cpu: Stats.fetch!(:cpu),
+       limits: Stats.fetch!(:limits),
+       memory: Stats.fetch!(:memory),
+       statistics: Stats.fetch!(:statistics),
+       system: Stats.fetch!(:system)
      }}
   end
 

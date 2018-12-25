@@ -14,8 +14,13 @@ defmodule Toby.Stats.Server do
     GenServer.start_link(__MODULE__, :ok, name: __MODULE__)
   end
 
-  def fetch(pid \\ __MODULE__, name) do
-    GenServer.call(pid, {:fetch, name})
+  def fetch(pid \\ __MODULE__, key) do
+    GenServer.call(pid, {:fetch, key})
+  end
+
+  def fetch!(pid \\ __MODULE__, key) do
+    {:ok, value} = fetch(pid, key)
+    value
   end
 
   @impl true
@@ -25,42 +30,37 @@ defmodule Toby.Stats.Server do
 
   @impl true
   def handle_call({:fetch, name}, _from, cache) do
-    {:ok, value, updated_cache} = fetch_cached(cache, name)
+    case fetch_cached(cache, name) do
+      {:ok, value, updated_cache} ->
+        {:reply, {:ok, value}, updated_cache}
 
-    {:reply, value, updated_cache}
-  end
-
-  defp fetch_cached(cache, name) do
-    updated_cache =
-      case cache[name] do
-        {_value, expires_at} ->
-          if expires_at > now(), do: cache, else: update_cache(cache, name)
-
-        _ ->
-          update_cache(cache, name)
-      end
-
-    {value, _expires_at} = updated_cache[name]
-
-    {:ok, value, updated_cache}
-  end
-
-  defp update_cache(cache, name) do
-    new_entry = {compute(name), now() + @cache_ms}
-
-    Map.put(cache, name, new_entry)
-  end
-
-  defp compute(name) do
-    case name do
-      :applications -> Provider.applications()
-      :cpu -> Provider.cpu()
-      :limits -> Provider.limits()
-      :memory -> Provider.memory()
-      :processes -> Provider.processes()
-      :statistics -> Provider.statistics()
-      :system -> Provider.system()
+      {:error, error} ->
+        {:reply, {:error, error}, cache}
     end
+  end
+
+  defp fetch_cached(cache, key) do
+    case cache[key] do
+      {value, expires_at} ->
+        if expires_at > now() do
+          {:ok, value, cache}
+        else
+          fetch_new(cache, key)
+        end
+
+      _ ->
+        fetch_new(cache, key)
+    end
+  end
+
+  defp fetch_new(cache, key) do
+    with {:ok, new_value} <- Provider.provide(key) do
+      {:ok, new_value, put_cache_entry(cache, key, new_value)}
+    end
+  end
+
+  defp put_cache_entry(cache, key, value) do
+    Map.put(cache, key, {value, now() + @cache_ms})
   end
 
   defp now, do: :erlang.monotonic_time(:millisecond)
