@@ -17,6 +17,13 @@ defmodule Toby.Components.Memory do
     status_bar = StatusBar.render(%{selected: :memory})
 
     view(bottom_bar: status_bar) do
+      panel title: "Carrier Size (MB)" do
+        label(content: "TODO")
+      end
+
+      panel title: "Carrier Utilization (%)" do
+        label(content: "TODO")
+      end
     end
   end
 end

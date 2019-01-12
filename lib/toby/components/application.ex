@@ -13,10 +13,10 @@ defmodule Toby.Components.Application do
   alias Toby.Components.StatusBar
   alias Toby.Stats.Server, as: Stats
 
-  @style_selected %{
+  @style_selected [
     color: color(:black),
     background: color(:white)
-  }
+  ]
 
   @arrow_up key(:arrow_up)
   @arrow_down key(:arrow_down)
@@ -65,10 +65,8 @@ defmodule Toby.Components.Application do
           panel(title: "Applications") do
             table do
               for {app, i} <- Enum.with_index(apps) do
-                table_row(
-                  if(cursor == i, do: @style_selected, else: %{}),
-                  [to_string(app)]
-                )
+                style = if(cursor == i, do: @style_selected, else: [])
+                table_row(style ++ [values: [to_string(app)]])
               end
             end
           end
@@ -84,23 +82,22 @@ defmodule Toby.Components.Application do
   end
 
   defp render_app_details(nil) do
-    label("(No Application)")
+    label(content: "(No Application)")
   end
 
   defp render_app_details(%{process_tree: tree}) when is_tuple(tree) do
-    element(:tree, [to_tree_node(tree)])
+    tree([to_tree_node(tree)])
   end
 
   defp render_app_details(_app_without_tree) do
-    label("(Application has no master process)")
+    label(content: "(Application has no master process)")
   end
 
   def app_title(%{name: name}), do: to_string(name)
   def app_title(_other), do: ""
 
   defp to_tree_node({pid_or_name, children}) do
-    element(
-      :tree_node,
+    tree_node(
       %{content: format_node(pid_or_name)},
       for(child <- children, do: to_tree_node(child))
     )

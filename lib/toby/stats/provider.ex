@@ -9,19 +9,23 @@ defmodule Toby.Stats.Provider do
 
   alias Toby.Stats.Applications
 
-  def provide(:processes) do
+  def provide(:processes, _) do
     {:ok, for(pid <- :erlang.processes(), do: extended_process_info(pid))}
   end
 
-  def provide(:ports) do
+  def provide(:ports, _) do
     {:ok, for(port <- :erlang.ports(), do: extended_port_info(port))}
   end
 
-  def provide(:applications), do: Applications.applications()
+  def provide(:applications, _) do
+    Applications.applications()
+  end
 
-  def provide({:application, app}), do: Applications.application(app)
+  def provide({:application, app}, _) do
+    Applications.application(app)
+  end
 
-  def provide(:system) do
+  def provide(:system, _) do
     {:ok,
      %{
        otp_release: system_info(:otp_release),
@@ -35,7 +39,7 @@ defmodule Toby.Stats.Provider do
      }}
   end
 
-  def provide(:cpu) do
+  def provide(:cpu, _) do
     {:ok,
      %{
        logical_cpus: :erlang.system_info(:logical_processors),
@@ -47,7 +51,7 @@ defmodule Toby.Stats.Provider do
      }}
   end
 
-  def provide(:limits) do
+  def provide(:limits, _) do
     {:ok,
      %{
        atoms: limit(system_info(:atom_count), system_info(:atom_limit)),
@@ -58,7 +62,7 @@ defmodule Toby.Stats.Provider do
      }}
   end
 
-  def provide(:statistics) do
+  def provide(:statistics, _) do
     {{:input, io_input}, {:output, io_output}} = :erlang.statistics(:io)
 
     {:ok,
@@ -70,11 +74,49 @@ defmodule Toby.Stats.Provider do
      }}
   end
 
-  def provide(:memory) do
+  def provide(:memory, _) do
     {:ok, Enum.into(:erlang.memory(), %{})}
   end
 
-  def provide(_other_key) do
+  def provide(:historical_memory, samples) do
+    memory_samples = for %{memory: memory} <- samples, do: memory
+
+    totals_by_second =
+      for sample <- memory_samples do
+        sample[:total] / :math.pow(1024, 2)
+      end
+
+    {:ok, Enum.reverse(totals_by_second)}
+  end
+
+  def provide(:historical_io, samples) do
+    io_samples = for %{io: io} <- samples, do: io
+
+    totals_by_second =
+      for {{:input, input}, {:output, output}} <- io_samples do
+        (input + output) / 1
+      end
+
+    {:ok, Enum.reverse(totals_by_second)}
+  end
+
+  def provide(:historical_scheduler_utilization, samples) do
+    util_samples = for %{scheduler_utilization: util} <- samples, do: util
+
+    util_by_second =
+      for {sample, next_sample} <- Enum.zip(util_samples, Enum.drop(util_samples, 1)) do
+        [{:total, total, _}, {:weighted, _, _} | rest] =
+          :scheduler.utilization(sample, next_sample)
+
+        for {:normal, id, util, _} <- rest, into: %{total: total} do
+          {id, util}
+        end
+      end
+
+    {:ok, Enum.reverse(util_by_second)}
+  end
+
+  def provide(_other_key, _) do
     {:error, :invalid_key}
   end
 

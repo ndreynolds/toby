@@ -16,14 +16,14 @@ defmodule Toby.Components.Process do
   alias Toby.Selection
   alias Toby.Stats.Server, as: Stats
 
-  @style_header %{
+  @style_header [
     attributes: [attribute(:bold)]
-  }
+  ]
 
-  @style_selected %{
+  @style_selected [
     color: color(:black),
     background: color(:white)
-  }
+  ]
 
   @arrow_up key(:arrow_up)
   @arrow_down key(:arrow_down)
@@ -66,26 +66,33 @@ defmodule Toby.Components.Process do
         column(size: 8) do
           panel(title: "Processes", height: :fill) do
             table do
-              table_row(@style_header, [
-                "PID",
-                "Name or Initial Func",
-                "Reds",
-                "Memory",
-                "MsgQ",
-                "Current Function"
-              ])
+              table_row(
+                Keyword.merge(
+                  @style_header,
+                  values: [
+                    "PID",
+                    "Name or Initial Func",
+                    "Reds",
+                    "Memory",
+                    "MsgQ",
+                    "Current Function"
+                  ]
+                )
+              )
 
               for proc <- processes do
                 table_row(
-                  if(proc == selected, do: @style_selected, else: %{}),
-                  [
-                    inspect(proc.pid),
-                    name_or_initial_func(proc),
-                    to_string(proc.reductions),
-                    inspect(proc.memory),
-                    to_string(proc.message_queue_len),
-                    format_func(proc.current_function)
-                  ]
+                  Keyword.merge(
+                    if(proc == selected, do: @style_selected, else: []),
+                    values: [
+                      inspect(proc.pid),
+                      name_or_initial_func(proc),
+                      to_string(proc.reductions),
+                      inspect(proc.memory),
+                      to_string(proc.message_queue_len),
+                      format_func(proc.current_function)
+                    ]
+                  )
                 )
               end
             end
@@ -104,20 +111,20 @@ defmodule Toby.Components.Process do
 
     panel(title: title, height: :fill) do
       table do
-        table_row(["Initial Call", format_func(process.initial_call)])
-        table_row(["Current Function", format_func(process.current_function)])
-        table_row(["Registered Name", to_string(process[:registered_name])])
-        table_row(["Status", to_string(process[:status])])
-        table_row(["Message Queue Len", to_string(process[:message_queue_len])])
-        table_row(["Group Leader", inspect(process[:group_leader])])
-        table_row(["Priority", to_string(process[:priority])])
-        table_row(["Trap Exit", to_string(process[:trap_exit])])
-        table_row(["Reductions", to_string(process[:reductions])])
-        table_row(["Error Handler", to_string(process[:error_handler])])
-        table_row(["Trace", to_string(process[:trace])])
+        table_row(values: ["Initial Call", format_func(process.initial_call)])
+        table_row(values: ["Current Function", format_func(process.current_function)])
+        table_row(values: ["Registered Name", to_string(process[:registered_name])])
+        table_row(values: ["Status", to_string(process[:status])])
+        table_row(values: ["Message Queue Len", to_string(process[:message_queue_len])])
+        table_row(values: ["Group Leader", inspect(process[:group_leader])])
+        table_row(values: ["Priority", to_string(process[:priority])])
+        table_row(values: ["Trap Exit", to_string(process[:trap_exit])])
+        table_row(values: ["Reductions", to_string(process[:reductions])])
+        table_row(values: ["Error Handler", to_string(process[:error_handler])])
+        table_row(values: ["Trace", to_string(process[:trace])])
       end
 
-      label("")
+      label(content: "")
       Links.render(process.links)
     end
   end

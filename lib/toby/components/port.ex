@@ -14,14 +14,14 @@ defmodule Toby.Components.Port do
   alias Toby.Stats.Server, as: Stats
   alias Toby.Selection
 
-  @style_header %{
+  @style_header [
     attributes: [attribute(:bold)]
-  }
+  ]
 
-  @style_selected %{
+  @style_selected [
     color: color(:black),
     background: color(:white)
-  }
+  ]
 
   @arrow_up key(:arrow_up)
   @arrow_down key(:arrow_down)
@@ -64,24 +64,30 @@ defmodule Toby.Components.Port do
         column(size: 8) do
           panel(title: "Ports", height: :fill) do
             table do
-              table_row(@style_header, [
-                "ID",
-                "Connected",
-                "Name",
-                "Controls",
-                "Slot"
-              ])
+              table_row(
+                Keyword.merge(@style_header,
+                  values: [
+                    "ID",
+                    "Connected",
+                    "Name",
+                    "Controls",
+                    "Slot"
+                  ]
+                )
+              )
 
               for port <- ports do
                 table_row(
-                  if(port == selected, do: @style_selected, else: %{}),
-                  [
-                    inspect(port.id),
-                    inspect(port.connected),
-                    "TODO",
-                    to_string(port.name),
-                    to_string(port.slot)
-                  ]
+                  Keyword.merge(
+                    if(port == selected, do: @style_selected, else: []),
+                    values: [
+                      inspect(port.id),
+                      inspect(port.connected),
+                      "TODO",
+                      to_string(port.name),
+                      to_string(port.slot)
+                    ]
+                  )
                 )
               end
             end
@@ -98,17 +104,17 @@ defmodule Toby.Components.Port do
   defp render_port_details(%{id: id} = port) do
     panel(title: inspect(id), height: :fill) do
       table do
-        table_row(["Registered Name", to_string(port[:registered_name])])
-        table_row(["Connected", inspect(port[:id])])
-        table_row(["Slot", to_string(port[:slot])])
-        table_row(["Controls", to_string(port[:name])])
-        table_row(["Parallelism", "TODO"])
-        table_row(["Locking", "TODO"])
-        table_row(["Queue Size", "TODO"])
-        table_row(["Memory", "TODO"])
+        table_row(values: ["Registered Name", to_string(port[:registered_name])])
+        table_row(values: ["Connected", inspect(port[:id])])
+        table_row(values: ["Slot", to_string(port[:slot])])
+        table_row(values: ["Controls", to_string(port[:name])])
+        table_row(values: ["Parallelism", "TODO"])
+        table_row(values: ["Locking", "TODO"])
+        table_row(values: ["Queue Size", "TODO"])
+        table_row(values: ["Memory", "TODO"])
       end
 
-      label("")
+      label(content: "")
       Links.render(port.links)
     end
   end

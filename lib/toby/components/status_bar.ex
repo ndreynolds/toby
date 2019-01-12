@@ -18,9 +18,9 @@ defmodule Toby.Components.StatusBar do
     {:port, "Po[r]ts"}
   ]
 
-  @style_selected %{
+  @style_selected [
     attributes: [Constants.attribute(:bold)]
-  }
+  ]
 
   def render(%{options: options} = attrs) do
     bar do
@@ -40,12 +40,12 @@ defmodule Toby.Components.StatusBar do
     rendered_options =
       for {key, label} <- options do
         if key == selected do
-          text(@style_selected, label)
+          text(@style_selected ++ [content: label])
         else
-          text(label)
+          text(content: label)
         end
       end
 
-    Enum.intersperse(rendered_options, text(" "))
+    Enum.intersperse(rendered_options, text(content: " "))
   end
 end

@@ -6,7 +6,7 @@ defmodule Toby.Stats.Server do
 
   use GenServer
 
-  alias Toby.Stats.Provider
+  alias Toby.Stats.{Provider, Sampler}
 
   @cache_ms 2000
 
@@ -25,37 +25,52 @@ defmodule Toby.Stats.Server do
 
   @impl true
   def init(:ok) do
-    {:ok, %{}}
+    Process.send_after(self(), :sample, 100)
+    {:ok, %{cache: %{}, samples: []}}
   end
 
   @impl true
-  def handle_call({:fetch, name}, _from, cache) do
-    case fetch_cached(cache, name) do
-      {:ok, value, updated_cache} ->
-        {:reply, {:ok, value}, updated_cache}
+  def handle_call({:fetch, name}, _from, state) do
+    case fetch_cached(state, name) do
+      {:ok, value, state} ->
+        {:reply, {:ok, value}, state}
 
       {:error, error} ->
-        {:reply, {:error, error}, cache}
+        {:reply, {:error, error}, state}
     end
   end
 
-  defp fetch_cached(cache, key) do
-    case cache[key] do
+  @impl true
+  def handle_info(:sample, state) do
+    Process.send_after(self(), :sample, 1000)
+
+    new_samples = [Sampler.sample() | Enum.take(state.samples, 59)]
+
+    {:noreply, %{state | samples: new_samples}}
+  end
+
+  @impl true
+  def handle_info(_, state) do
+    {:noreply, state}
+  end
+
+  defp fetch_cached(state, key) do
+    case state.cache[key] do
       {value, expires_at} ->
         if expires_at > now() do
-          {:ok, value, cache}
+          {:ok, value, state}
         else
-          fetch_new(cache, key)
+          fetch_new(state, key)
         end
 
       _ ->
-        fetch_new(cache, key)
+        fetch_new(state, key)
     end
   end
 
-  defp fetch_new(cache, key) do
-    with {:ok, new_value} <- Provider.provide(key) do
-      {:ok, new_value, put_cache_entry(cache, key, new_value)}
+  defp fetch_new(state, key) do
+    with {:ok, new_value} <- Provider.provide(key, state.samples) do
+      {:ok, new_value, %{state | cache: put_cache_entry(state.cache, key, new_value)}}
     end
   end
 

@@ -10,7 +10,7 @@ defmodule Toby.Components.Links do
   def render(links) do
     panel(title: "Links (#{length(links)})") do
       table do
-        for link <- links, do: table_row([inspect(link)])
+        for link <- links, do: table_row(values: [inspect(link)])
       end
     end
   end
