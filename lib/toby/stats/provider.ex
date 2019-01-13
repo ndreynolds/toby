@@ -108,8 +108,8 @@ defmodule Toby.Stats.Provider do
         [{:total, total, _}, {:weighted, _, _} | rest] =
           :scheduler.utilization(sample, next_sample)
 
-        for {:normal, id, util, _} <- rest, into: %{total: total} do
-          {id, util}
+        for {:normal, id, util, _} <- rest, into: %{total: total * 100} do
+          {id, util * 100}
         end
       end
 
