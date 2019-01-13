@@ -25,6 +25,6 @@ deploy:
   provider: releases
   api_key: $GITHUB_OAUTH_TOKEN
   file_glob: true
-  file: artifacts/*
+  file: artifacts/**/*
   skip_cleanup: true
   draft: true
