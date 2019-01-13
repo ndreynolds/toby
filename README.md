@@ -6,6 +6,9 @@ so far.
 It's being developed in parallel with [ex_termbox][1], which renders the
 terminal and provides a view and eventing library.
 
+![Applications Tab](doc/applications.png)
+![Load Tab](doc/load-charts.png)
+![Processes](doc/processes.png)
 
 ## Usage
 
