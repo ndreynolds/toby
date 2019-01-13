@@ -3,11 +3,10 @@ defmodule Toby.Components.StatusBar do
   A component that displays the status bar for navigation between views.
   """
 
-  @behaviour Toby.Component.Stateless
+  @behaviour Ratatouille.Component.Stateless
 
-  import ExTermbox.Renderer.View
-
-  alias ExTermbox.Constants
+  import Ratatouille.Renderer.View
+  import Ratatouille.Constants, only: [attribute: 1]
 
   @default_options [
     {:system, "[S]ystem"},
@@ -19,7 +18,7 @@ defmodule Toby.Components.StatusBar do
   ]
 
   @style_selected [
-    attributes: [Constants.attribute(:bold)]
+    attributes: [attribute(:bold)]
   ]
 
   def render(%{options: options} = attrs) do

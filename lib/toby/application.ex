@@ -9,8 +9,8 @@ defmodule Toby.Application do
     import Supervisor.Spec
 
     children = [
-      worker(ExTermbox.Window, []),
-      worker(ExTermbox.EventManager, []),
+      worker(Ratatouille.Window, []),
+      worker(Ratatouille.EventManager, []),
       Toby.Console,
       Toby.Stats.Server
     ]

@@ -3,10 +3,10 @@ defmodule Toby.Components.System do
   A component that displays summarized information about the Erlang VM.
   """
 
-  @behaviour Toby.Component.Stateful
+  @behaviour Ratatouille.Component.Stateful
 
+  import Ratatouille.Renderer.View
   import Toby.Formatting
-  import ExTermbox.Renderer.View
 
   alias Toby.Components.StatusBar
   alias Toby.Stats.Server, as: Stats

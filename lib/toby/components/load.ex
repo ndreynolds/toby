@@ -3,10 +3,10 @@ defmodule Toby.Components.Load do
   TODO: A component for displaying information about system load
   """
 
-  @behaviour Toby.Component.Stateful
+  @behaviour Ratatouille.Component.Stateful
 
-  import ExTermbox.Constants, only: [color: 1, key: 1]
-  import ExTermbox.Renderer.View
+  import Ratatouille.Constants, only: [color: 1, key: 1]
+  import Ratatouille.Renderer.View
 
   alias ExTermbox.Event
 

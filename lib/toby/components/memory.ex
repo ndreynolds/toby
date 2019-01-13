@@ -3,9 +3,9 @@ defmodule Toby.Components.Memory do
   TODO: A component for displaying information about memory usage
   """
 
-  @behaviour Toby.Component.Stateful
+  @behaviour Ratatouille.Component.Stateful
 
-  import ExTermbox.Renderer.View
+  import Ratatouille.Renderer.View
 
   alias Toby.Components.StatusBar
 

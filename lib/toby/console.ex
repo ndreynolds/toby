@@ -7,7 +7,7 @@ defmodule Toby.Console do
   use Task, restart: :transient
   require Logger
 
-  alias ExTermbox.{Event, EventManager, Window}
+  alias Ratatouille.{EventManager, Window}
 
   alias Toby.Components.Application, as: ApplicationComponent
   alias Toby.Components.Load, as: LoadComponent
@@ -37,26 +37,26 @@ defmodule Toby.Console do
     :ok = Window.update(component.render(state))
 
     receive do
-      {:event, %Event{ch: ?q}} ->
+      {:event, %{ch: ?q}} ->
         Logger.debug("received quit command")
         shutdown()
 
-      {:event, %Event{ch: ?s}} ->
+      {:event, %{ch: ?s}} ->
         loop(SystemComponent, state)
 
-      {:event, %Event{ch: ?l}} ->
+      {:event, %{ch: ?l}} ->
         loop(LoadComponent, state)
 
-      {:event, %Event{ch: ?m}} ->
+      {:event, %{ch: ?m}} ->
         loop(MemoryComponent, state)
 
-      {:event, %Event{ch: ?a}} ->
+      {:event, %{ch: ?a}} ->
         loop(ApplicationComponent, state)
 
-      {:event, %Event{ch: ?p}} ->
+      {:event, %{ch: ?p}} ->
         loop(ProcessComponent, state)
 
-      {:event, %Event{ch: ?r}} ->
+      {:event, %{ch: ?r}} ->
         loop(PortComponent, state)
 
       {:event, event} ->

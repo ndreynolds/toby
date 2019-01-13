@@ -3,9 +3,9 @@ defmodule Toby.Components.Links do
   A partial view to display process or port links.
   """
 
-  @behaviour Toby.Component.Stateless
+  @behaviour Ratatouille.Component.Stateless
 
-  import ExTermbox.Renderer.View
+  import Ratatouille.Renderer.View
 
   def render(links) do
     panel(title: "Links (#{length(links)})") do

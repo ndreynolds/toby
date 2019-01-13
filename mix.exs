@@ -22,8 +22,8 @@ defmodule Toby.Mixfile do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      # {:ex_termbox, "~> 0.1.0"}
-      {:ex_termbox, path: "../ex_termbox"},
+      {:ex_termbox, "~> 0.3"},
+      {:ratatouille, "~> 0.1"},
       {:credo, "~> 1.0", runtime: false},
       {:distillery, "~> 2.0"},
       {:logger_file_backend, "~> 0.0.10"}

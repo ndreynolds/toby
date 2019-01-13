@@ -3,10 +3,10 @@ defmodule Toby.Components.Process do
   A component for displaying information about processes
   """
 
-  @behaviour Toby.Component.Stateful
+  @behaviour Ratatouille.Component.Stateful
 
-  import ExTermbox.Constants, only: [attribute: 1, color: 1, key: 1]
-  import ExTermbox.Renderer.View
+  import Ratatouille.Constants, only: [attribute: 1, color: 1, key: 1]
+  import Ratatouille.Renderer.View
 
   import Toby.Formatting, only: [format_func: 1]
 
