@@ -7,7 +7,8 @@ defmodule Toby.Mixfile do
       version: "0.1.0",
       elixir: "~> 1.5",
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      deps: deps(),
+      aliases: aliases()
     ]
   end
 
@@ -22,11 +23,16 @@ defmodule Toby.Mixfile do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:ex_termbox, "~> 0.3"},
-      {:ratatouille, "~> 0.1"},
+      {:ratatouille, git: "https://github.com/ndreynolds/ratatouille"},
       {:credo, "~> 1.0", runtime: false},
       {:distillery, "~> 2.0"},
       {:logger_file_backend, "~> 0.0.10"}
+    ]
+  end
+
+  defp aliases do
+    [
+      test: "test --no-start"
     ]
   end
 end

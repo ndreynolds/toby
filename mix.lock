@@ -8,5 +8,5 @@
   "ex_termbox": {:hex, :ex_termbox, "0.3.1", "146933c3c96ce7deeca375ba186db397e554163e5616033fc495f99462ec81eb", [:make, :mix], [{:elixir_make, "~> 0.4", [hex: :elixir_make, repo: "hexpm", optional: false]}], "hexpm"},
   "jason": {:hex, :jason, "1.1.2", "b03dedea67a99223a2eaf9f1264ce37154564de899fd3d8b9a21b1a6fd64afe7", [:mix], [{:decimal, "~> 1.0", [hex: :decimal, repo: "hexpm", optional: true]}], "hexpm"},
   "logger_file_backend": {:hex, :logger_file_backend, "0.0.10", "876f9f84ae110781207c54321ffbb62bebe02946fe3c13f0d7c5f5d8ad4fa910", [:mix], [], "hexpm"},
-  "ratatouille": {:hex, :ratatouille, "0.1.0", "74f233ab2f31d4427f09b791b4e5f9a493369ad990d45acb908d74ebcad55954", [:mix], [{:asciichart, "~> 1.0", [hex: :asciichart, repo: "hexpm", optional: false]}, {:ex_termbox, "~> 0.3", [hex: :ex_termbox, repo: "hexpm", optional: false]}], "hexpm"},
+  "ratatouille": {:git, "https://github.com/ndreynolds/ratatouille", "7e624d11d03c901587212a8ea4c7512d75728f58", []},
 }
