@@ -10,8 +10,6 @@ defmodule Toby.Components.Process do
 
   import Toby.Formatting, only: [format_func: 1]
 
-  alias ExTermbox.Event
-
   alias Toby.Components.{Links, StatusBar}
   alias Toby.Selection
   alias Toby.Stats.Server, as: Stats
@@ -28,8 +26,9 @@ defmodule Toby.Components.Process do
   @arrow_up key(:arrow_up)
   @arrow_down key(:arrow_down)
 
+  @impl true
   def handle_event(
-        %Event{ch: ch, key: key},
+        %{ch: ch, key: key},
         %{process_cursor: cursor, processes: processes} = state
       )
       when ch == ?j or key == @arrow_down do
@@ -37,7 +36,7 @@ defmodule Toby.Components.Process do
   end
 
   def handle_event(
-        %Event{ch: ch, key: key},
+        %{ch: ch, key: key},
         %{process_cursor: cursor} = state
       )
       when ch == ?k or key == @arrow_up do
@@ -46,7 +45,8 @@ defmodule Toby.Components.Process do
 
   def handle_event(_event, state), do: {:ok, state}
 
-  def tick(state) do
+  @impl true
+  def handle_tick(state) do
     {:ok,
      Map.merge(state, %{
        process_cursor: state[:process_cursor] || 0,
@@ -54,6 +54,7 @@ defmodule Toby.Components.Process do
      })}
   end
 
+  @impl true
   def render(%{processes: all_processes, process_cursor: cursor, window: %{height: height}}) do
     processes = Selection.slice(all_processes, height - 12, cursor)
 

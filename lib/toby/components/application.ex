@@ -8,8 +8,6 @@ defmodule Toby.Components.Application do
   import Ratatouille.Constants, only: [color: 1, key: 1]
   import Ratatouille.Renderer.View
 
-  alias ExTermbox.Event
-
   alias Toby.Components.StatusBar
   alias Toby.Stats.Server, as: Stats
 
@@ -21,8 +19,9 @@ defmodule Toby.Components.Application do
   @arrow_up key(:arrow_up)
   @arrow_down key(:arrow_down)
 
+  @impl true
   def handle_event(
-        %Event{ch: ch, key: key},
+        %{ch: ch, key: key},
         %{application_cursor: cursor, applications: applications} = state
       )
       when ch == ?j or key == @arrow_down do
@@ -30,7 +29,7 @@ defmodule Toby.Components.Application do
   end
 
   def handle_event(
-        %Event{ch: ch, key: key},
+        %{ch: ch, key: key},
         %{application_cursor: cursor} = state
       )
       when ch == ?k or key == @arrow_up do
@@ -39,7 +38,8 @@ defmodule Toby.Components.Application do
 
   def handle_event(_event, state), do: {:ok, state}
 
-  def tick(state) do
+  @impl true
+  def handle_tick(state) do
     applications = Stats.fetch!(:applications)
     cursor = state[:application_cursor] || 0
     selected_key = Enum.at(applications, cursor)
@@ -52,6 +52,7 @@ defmodule Toby.Components.Application do
      }}
   end
 
+  @impl true
   def render(%{
         applications: apps,
         application_cursor: cursor,

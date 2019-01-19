@@ -7,6 +7,7 @@ defmodule Toby.Components.Links do
 
   import Ratatouille.Renderer.View
 
+  @impl true
   def render(links) do
     panel(title: "Links (#{length(links)})") do
       table do

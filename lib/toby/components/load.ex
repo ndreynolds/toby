@@ -8,8 +8,6 @@ defmodule Toby.Components.Load do
   import Ratatouille.Constants, only: [color: 1, key: 1]
   import Ratatouille.Renderer.View
 
-  alias ExTermbox.Event
-
   alias Toby.Components.StatusBar
   alias Toby.Selection
   alias Toby.Stats.Server, as: Stats
@@ -22,8 +20,9 @@ defmodule Toby.Components.Load do
   @arrow_up key(:arrow_up)
   @arrow_down key(:arrow_down)
 
+  @impl true
   def handle_event(
-        %Event{ch: ch, key: key},
+        %{ch: ch, key: key},
         %{load_cursor: cursor, utilization_opts: opts} = state
       )
       when ch == ?j or key == @arrow_down do
@@ -31,16 +30,19 @@ defmodule Toby.Components.Load do
   end
 
   def handle_event(
-        %Event{ch: ch, key: key},
+        %{ch: ch, key: key},
         %{load_cursor: cursor} = state
       )
       when ch == ?k or key == @arrow_up do
     {:ok, %{state | load_cursor: max(cursor - 1, 0)}}
   end
 
-  def handle_event(_event, state), do: {:ok, state}
+  def handle_event(_event, state) do
+    {:ok, state}
+  end
 
-  def tick(state) do
+  @impl true
+  def handle_tick(state) do
     %{schedulers: scheduler_count} = Stats.fetch!(:cpu)
 
     {:ok,
@@ -53,6 +55,7 @@ defmodule Toby.Components.Load do
      })}
   end
 
+  @impl true
   def render(%{
         utilization: utilization,
         utilization_opts: all_utilization_opts,

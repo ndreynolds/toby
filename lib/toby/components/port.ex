@@ -8,8 +8,6 @@ defmodule Toby.Components.Port do
   import Ratatouille.Constants, only: [attribute: 1, color: 1, key: 1]
   import Ratatouille.Renderer.View
 
-  alias ExTermbox.Event
-
   alias Toby.Components.{Links, StatusBar}
   alias Toby.Stats.Server, as: Stats
   alias Toby.Selection
@@ -26,8 +24,9 @@ defmodule Toby.Components.Port do
   @arrow_up key(:arrow_up)
   @arrow_down key(:arrow_down)
 
+  @impl true
   def handle_event(
-        %Event{ch: ch, key: key},
+        %{ch: ch, key: key},
         %{port_cursor: cursor, ports: ports} = state
       )
       when ch == ?j or key == @arrow_down do
@@ -35,7 +34,7 @@ defmodule Toby.Components.Port do
   end
 
   def handle_event(
-        %Event{ch: ch, key: key},
+        %{ch: ch, key: key},
         %{port_cursor: cursor} = state
       )
       when ch == ?k or key == @arrow_up do
@@ -44,7 +43,8 @@ defmodule Toby.Components.Port do
 
   def handle_event(_event, state), do: {:ok, state}
 
-  def tick(state) do
+  @impl true
+  def handle_tick(state) do
     {:ok,
      Map.merge(state, %{
        port_cursor: state[:port_cursor] || 0,
@@ -52,6 +52,7 @@ defmodule Toby.Components.Port do
      })}
   end
 
+  @impl true
   def render(%{ports: all_ports, port_cursor: cursor, window: %{height: height}}) do
     ports = Selection.slice(all_ports, height - 12, cursor)
 

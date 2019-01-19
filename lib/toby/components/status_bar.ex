@@ -21,6 +21,7 @@ defmodule Toby.Components.StatusBar do
     attributes: [attribute(:bold)]
   ]
 
+  @impl true
   def render(%{options: options} = attrs) do
     bar do
       label do

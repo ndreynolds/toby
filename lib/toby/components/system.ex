@@ -11,9 +11,11 @@ defmodule Toby.Components.System do
   alias Toby.Components.StatusBar
   alias Toby.Stats.Server, as: Stats
 
+  @impl true
   def handle_event(_event, state), do: {:ok, state}
 
-  def tick(_state) do
+  @impl true
+  def handle_tick(_state) do
     {:ok,
      %{
        cpu: Stats.fetch!(:cpu),
@@ -24,7 +26,14 @@ defmodule Toby.Components.System do
      }}
   end
 
-  def render(%{cpu: cpu, limits: limits, memory: memory, statistics: statistics, system: system}) do
+  @impl true
+  def render(%{
+        cpu: cpu,
+        limits: limits,
+        memory: memory,
+        statistics: statistics,
+        system: system
+      }) do
     status_bar = StatusBar.render(%{selected: :system})
 
     view(bottom_bar: status_bar) do

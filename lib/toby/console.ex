@@ -32,7 +32,7 @@ defmodule Toby.Console do
     {:ok, state} =
       init_state
       |> Map.put(:window, window_info())
-      |> component.tick()
+      |> component.handle_tick()
 
     :ok = Window.update(component.render(state))
 
