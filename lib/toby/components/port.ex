@@ -9,8 +9,8 @@ defmodule Toby.Components.Port do
   import Ratatouille.Renderer.View
 
   alias Toby.Components.{Links, StatusBar}
-  alias Toby.Stats.Server, as: Stats
   alias Toby.Selection
+  alias Toby.Stats.Server, as: Stats
 
   @style_header [
     attributes: [attribute(:bold)]

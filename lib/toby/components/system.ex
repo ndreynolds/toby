@@ -79,11 +79,7 @@ defmodule Toby.Components.System do
             table do
               table_row(values: ["Logical CPUs:", to_string(cpu.logical_cpus)])
               table_row(values: ["Online Logical CPUs:", to_string(cpu.online_logical_cpus)])
-
-              table_row(
-                values: ["Available Logical CPUs:", to_string(cpu.available_logical_cpus)]
-              )
-
+              table_row(values: ["Available Logical CPUs:", to_string(cpu.available_logical_cpus)])
               table_row(values: ["Schedulers:", to_string(cpu.schedulers)])
               table_row(values: ["Online schedulers:", to_string(cpu.online_schedulers)])
               table_row(values: ["Available schedulers:", to_string(cpu.available_schedulers)])

@@ -94,8 +94,8 @@ defmodule Toby.Components.Application do
     label(content: "(Application has no master process)")
   end
 
-  def app_title(%{name: name}), do: to_string(name)
-  def app_title(_other), do: ""
+  defp app_title(%{name: name}), do: to_string(name)
+  defp app_title(_other), do: ""
 
   defp to_tree_node({pid_or_name, children}) do
     tree_node(
