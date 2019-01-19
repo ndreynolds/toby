@@ -10,34 +10,34 @@ defmodule Toby.Formatting do
     day: 1000 * 60 * 60 * 24
   }
 
-  def humanize_relative_time(ms) do
+  def format_ms(ms) do
     cond do
-      ms > @ms_conversions.day ->
-        format_relative_time(ms / @ms_conversions.day, {"day", "days"})
+      ms >= @ms_conversions.day ->
+        format_ms(ms / @ms_conversions.day, {"day", "days"})
 
-      ms > @ms_conversions.hour ->
-        format_relative_time(ms / @ms_conversions.hour, {"hour", "hours"})
+      ms >= @ms_conversions.hour ->
+        format_ms(ms / @ms_conversions.hour, {"hour", "hours"})
 
-      ms > @ms_conversions.minute ->
-        format_relative_time(ms / @ms_conversions.minute, {"minute", "minutes"})
+      ms >= @ms_conversions.minute ->
+        format_ms(ms / @ms_conversions.minute, {"minute", "minutes"})
 
-      ms > @ms_conversions.second ->
-        format_relative_time(ms / @ms_conversions.second, {"second", "seconds"})
+      ms >= @ms_conversions.second ->
+        format_ms(ms / @ms_conversions.second, {"second", "seconds"})
 
       true ->
-        format_relative_time(ms, {"ms", "ms"})
+        format_ms(ms, {"ms", "ms"})
     end
   end
 
-  def format_relative_time(t, suffixes) when is_float(t) do
-    format_relative_time(:erlang.trunc(t), suffixes)
+  defp format_ms(t, suffixes) when is_float(t) do
+    format_ms(:erlang.trunc(t), suffixes)
   end
 
-  def format_relative_time(1, {suffix_singular, _}) do
+  defp format_ms(1, {suffix_singular, _}) do
     "1 #{suffix_singular}"
   end
 
-  def format_relative_time(t, {_, suffix_plural}) do
+  defp format_ms(t, {_, suffix_plural}) do
     "#{t} #{suffix_plural}"
   end
 
@@ -48,31 +48,31 @@ defmodule Toby.Formatting do
     kilobyte: 1024
   }
 
-  def humanize_bytes(bytes) do
+  def format_bytes(bytes) do
     cond do
-      bytes > @byte_conversions.terabyte ->
-        format_bytes(bytes / @byte_conversions.terabyte, "TB")
+      bytes >= @byte_conversions.terabyte ->
+        format_bytes(bytes / @byte_conversions.terabyte, " TB")
 
-      bytes > @byte_conversions.gigabyte ->
-        format_bytes(bytes / @byte_conversions.gigabyte, "GB")
+      bytes >= @byte_conversions.gigabyte ->
+        format_bytes(bytes / @byte_conversions.gigabyte, " GB")
 
-      bytes > @byte_conversions.megabyte ->
-        format_bytes(bytes / @byte_conversions.megabyte, "MB")
+      bytes >= @byte_conversions.megabyte ->
+        format_bytes(bytes / @byte_conversions.megabyte, " MB")
 
-      bytes > @byte_conversions.kilobyte ->
-        format_bytes(bytes / @byte_conversions.kilobyte, "KB")
+      bytes >= @byte_conversions.kilobyte ->
+        format_bytes(bytes / @byte_conversions.kilobyte, " KB")
 
       true ->
         format_bytes(bytes, "")
     end
   end
 
-  def format_bytes(bytes, suffix) when is_float(bytes) do
+  defp format_bytes(bytes, suffix) when is_float(bytes) do
     format_bytes(bytes |> Float.round(2) |> Float.to_string(), suffix)
   end
 
-  def format_bytes(bytes, suffix) when is_binary(bytes) or is_integer(bytes) do
-    "#{bytes} #{suffix}"
+  defp format_bytes(bytes, suffix) when is_binary(bytes) or is_integer(bytes) do
+    to_string(bytes) <> suffix
   end
 
   def format_func({mod, name, arity}) do

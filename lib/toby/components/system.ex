@@ -59,15 +59,15 @@ defmodule Toby.Components.System do
         column(size: 6) do
           panel(title: "Memory Usage") do
             table do
-              table_row(values: ["Total", humanize_bytes(memory.total)])
-              table_row(values: ["Processes", humanize_bytes(memory.processes)])
-              table_row(values: ["Processes (used)", humanize_bytes(memory.processes_used)])
-              table_row(values: ["System", humanize_bytes(memory.system)])
-              table_row(values: ["Atoms", humanize_bytes(memory.atom)])
-              table_row(values: ["Atoms (used)", humanize_bytes(memory.atom_used)])
-              table_row(values: ["Binaries", humanize_bytes(memory.binary)])
-              table_row(values: ["Code", humanize_bytes(memory.code)])
-              table_row(values: ["ETS", humanize_bytes(memory.ets)])
+              table_row(values: ["Total", format_bytes(memory.total)])
+              table_row(values: ["Processes", format_bytes(memory.processes)])
+              table_row(values: ["Processes (used)", format_bytes(memory.processes_used)])
+              table_row(values: ["System", format_bytes(memory.system)])
+              table_row(values: ["Atoms", format_bytes(memory.atom)])
+              table_row(values: ["Atoms (used)", format_bytes(memory.atom_used)])
+              table_row(values: ["Binaries", format_bytes(memory.binary)])
+              table_row(values: ["Code", format_bytes(memory.code)])
+              table_row(values: ["ETS", format_bytes(memory.ets)])
             end
           end
         end
@@ -94,10 +94,10 @@ defmodule Toby.Components.System do
         column(size: 6) do
           panel(title: "Statistics") do
             table do
-              table_row(values: ["Uptime:", humanize_relative_time(statistics.uptime_ms)])
+              table_row(values: ["Uptime:", format_ms(statistics.uptime_ms)])
               table_row(values: ["Run Queue:", to_string(statistics.run_queue)])
-              table_row(values: ["IO Input:", humanize_bytes(statistics.io_input_bytes)])
-              table_row(values: ["IO Output:", humanize_bytes(statistics.io_output_bytes)])
+              table_row(values: ["IO Input:", format_bytes(statistics.io_input_bytes)])
+              table_row(values: ["IO Output:", format_bytes(statistics.io_output_bytes)])
             end
           end
         end
