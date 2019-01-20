@@ -117,9 +117,8 @@ defmodule Toby.Components.Load do
   end
 
   defp build_utilization_opts(scheduler_count) do
-    for i <- 1..scheduler_count, into: [{"Total", :total}] do
-      {"Scheduler #{i}", i}
-    end
-    |> Enum.with_index()
+    scheduler_opts = for i <- 1..scheduler_count, do: {"Scheduler #{i}", i}
+
+    Enum.with_index([{"Total", :total} | scheduler_opts])
   end
 end
