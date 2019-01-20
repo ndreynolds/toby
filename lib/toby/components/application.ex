@@ -69,8 +69,9 @@ defmodule Toby.Components.Application do
           panel(title: "Applications") do
             table do
               for {app, i} <- Enum.with_index(apps) do
-                style = if(cursor == i, do: @style_selected, else: [])
-                table_row(style ++ [values: [to_string(app)]])
+                table_row(if(cursor == i, do: @style_selected, else: [])) do
+                  table_cell(content: to_string(app))
+                end
               end
             end
           end

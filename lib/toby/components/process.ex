@@ -78,34 +78,24 @@ defmodule Toby.Components.Process do
         column(size: 8) do
           panel(title: "Processes", height: :fill) do
             table do
-              table_row(
-                Keyword.merge(
-                  @style_header,
-                  values: [
-                    "PID",
-                    "Name or Initial Func",
-                    "Reds",
-                    "Memory",
-                    "MsgQ",
-                    "Current Function"
-                  ]
-                )
-              )
+              table_row(@style_header) do
+                table_cell(content: "PID")
+                table_cell(content: "Name or Initial Func")
+                table_cell(content: "Reds")
+                table_cell(content: "Memory")
+                table_cell(content: "MsgQ")
+                table_cell(content: "Current Function")
+              end
 
               for proc <- processes do
-                table_row(
-                  Keyword.merge(
-                    if(proc == selected, do: @style_selected, else: []),
-                    values: [
-                      inspect(proc.pid),
-                      name_or_initial_func(proc),
-                      to_string(proc.reductions),
-                      inspect(proc.memory),
-                      to_string(proc.message_queue_len),
-                      format_func(proc.current_function)
-                    ]
-                  )
-                )
+                table_row(if(proc == selected, do: @style_selected, else: [])) do
+                  table_cell(content: inspect(proc.pid))
+                  table_cell(content: name_or_initial_func(proc))
+                  table_cell(content: inspect(proc.memory))
+                  table_cell(content: to_string(proc.reductions))
+                  table_cell(content: to_string(proc.message_queue_len))
+                  table_cell(content: format_func(proc.current_function))
+                end
               end
             end
           end
@@ -123,17 +113,60 @@ defmodule Toby.Components.Process do
 
     panel(title: title, height: :fill) do
       table do
-        table_row(values: ["Initial Call", format_func(process.initial_call)])
-        table_row(values: ["Current Function", format_func(process.current_function)])
-        table_row(values: ["Registered Name", to_string(process[:registered_name])])
-        table_row(values: ["Status", to_string(process[:status])])
-        table_row(values: ["Message Queue Len", to_string(process[:message_queue_len])])
-        table_row(values: ["Group Leader", inspect(process[:group_leader])])
-        table_row(values: ["Priority", to_string(process[:priority])])
-        table_row(values: ["Trap Exit", to_string(process[:trap_exit])])
-        table_row(values: ["Reductions", to_string(process[:reductions])])
-        table_row(values: ["Error Handler", to_string(process[:error_handler])])
-        table_row(values: ["Trace", to_string(process[:trace])])
+        table_row do
+          table_cell(content: "Initial Call")
+          table_cell(content: format_func(process.initial_call))
+        end
+
+        table_row do
+          table_cell(content: "Current Function")
+          table_cell(content: format_func(process.current_function))
+        end
+
+        table_row do
+          table_cell(content: "Registered Name")
+          table_cell(content: to_string(process[:registered_name]))
+        end
+
+        table_row do
+          table_cell(content: "Status")
+          table_cell(content: to_string(process[:status]))
+        end
+
+        table_row do
+          table_cell(content: "Message Queue Len")
+          table_cell(content: to_string(process[:message_queue_len]))
+        end
+
+        table_row do
+          table_cell(content: "Group Leader")
+          table_cell(content: inspect(process[:group_leader]))
+        end
+
+        table_row do
+          table_cell(content: "Priority")
+          table_cell(content: to_string(process[:priority]))
+        end
+
+        table_row do
+          table_cell(content: "Trap Exit")
+          table_cell(content: to_string(process[:trap_exit]))
+        end
+
+        table_row do
+          table_cell(content: "Reductions")
+          table_cell(content: to_string(process[:reductions]))
+        end
+
+        table_row do
+          table_cell(content: "Error Handler")
+          table_cell(content: to_string(process[:error_handler]))
+        end
+
+        table_row do
+          table_cell(content: "Trace")
+          table_cell(content: to_string(process[:trace]))
+        end
       end
 
       label(content: "")

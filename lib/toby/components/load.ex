@@ -67,7 +67,7 @@ defmodule Toby.Components.Load do
         load_cursor: cursor
       }) do
     # Find the selected utilization series
-    utilization_opts = Selection.slice(all_utilization_opts, 5, cursor)
+    utilization_opts = Selection.slice(all_utilization_opts, 6, cursor)
     {{_label, key}, _idx} = Enum.at(all_utilization_opts, cursor)
     utilization_series = for sample <- utilization, do: sample[key]
 
@@ -87,12 +87,9 @@ defmodule Toby.Components.Load do
             panel title: "Selection", height: 10 do
               table do
                 for {{label, _key}, idx} <- utilization_opts do
-                  table_row(
-                    Keyword.merge(
-                      if(idx == cursor, do: @style_selected, else: []),
-                      values: [label]
-                    )
-                  )
+                  table_row(if(idx == cursor, do: @style_selected, else: [])) do
+                    table_cell(content: label)
+                  end
                 end
               end
             end
