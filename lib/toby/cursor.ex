@@ -7,5 +7,5 @@ defmodule Toby.Cursor do
   def next(cursor, _), do: cursor + 1
 
   def previous(0, length), do: length - 1
-  def previous(cursor, length), do: cursor - 1
+  def previous(cursor, _), do: cursor - 1
 end
