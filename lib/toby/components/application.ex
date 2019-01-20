@@ -43,7 +43,7 @@ defmodule Toby.Components.Application do
 
   @impl true
   def handle_tick(state) do
-    applications = Stats.fetch!(:applications)
+    applications = Stats.fetch!(:applications) |> Enum.sort_by(&to_string/1)
     cursor = state[:application_cursor] || 0
     selected_key = Enum.at(applications, cursor)
 
