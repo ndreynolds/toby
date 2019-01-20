@@ -91,8 +91,8 @@ defmodule Toby.Components.Process do
                 table_row(if(proc == selected, do: @style_selected, else: [])) do
                   table_cell(content: inspect(proc.pid))
                   table_cell(content: name_or_initial_func(proc))
-                  table_cell(content: inspect(proc.memory))
                   table_cell(content: to_string(proc.reductions))
+                  table_cell(content: inspect(proc.memory))
                   table_cell(content: to_string(proc.message_queue_len))
                   table_cell(content: format_func(proc.current_function))
                 end
