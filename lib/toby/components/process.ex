@@ -27,6 +27,14 @@ defmodule Toby.Components.Process do
   @arrow_up key(:arrow_up)
   @arrow_down key(:arrow_down)
 
+  # The number of rows that make up the application and table frame, used to
+  # calculate the number of displayable rows.
+  #
+  # TODO: Currently ratatouille does not expose the rendered size of an element
+  # (this is internal to the rendering engine), but we'd need to expose the box
+  # model in order to calculate this dynamically.
+  @frame_rows 7
+
   @impl true
   def handle_event(
         %{ch: ch, key: key},
@@ -59,7 +67,7 @@ defmodule Toby.Components.Process do
 
   @impl true
   def render(%{processes: all_processes, process_cursor: cursor, window: %{height: height}}) do
-    processes = Selection.slice(all_processes, height - 12, cursor)
+    processes = Selection.slice(all_processes, height - @frame_rows, cursor)
 
     selected = Enum.at(all_processes, cursor)
 

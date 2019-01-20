@@ -25,6 +25,9 @@ defmodule Toby.Components.Port do
   @arrow_up key(:arrow_up)
   @arrow_down key(:arrow_down)
 
+  # The number of rows that make up the application and table frame
+  @frame_rows 7
+
   @impl true
   def handle_event(
         %{ch: ch, key: key},
@@ -57,7 +60,7 @@ defmodule Toby.Components.Port do
 
   @impl true
   def render(%{ports: all_ports, port_cursor: cursor, window: %{height: height}}) do
-    ports = Selection.slice(all_ports, height - 12, cursor)
+    ports = Selection.slice(all_ports, height - @frame_rows, cursor)
 
     selected = Enum.at(all_ports, cursor)
 
