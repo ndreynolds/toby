@@ -105,7 +105,7 @@ defmodule Toby.Stats.Provider do
 
     util_by_second =
       for {sample, next_sample} <- Enum.zip(util_samples, Enum.drop(util_samples, 1)) do
-        [{:total, total, _}, {:weighted, _, _} | rest] = :scheduler.utilization(sample, next_sample)
+        [{:total, total, _} | rest] = :scheduler.utilization(sample, next_sample)
 
         for {:normal, id, util, _} <- rest, into: %{total: total * 100} do
           {id, util * 100}
