@@ -9,6 +9,7 @@ defmodule Toby.Components.Load do
   import Ratatouille.Renderer.View
 
   alias Toby.Components.StatusBar
+  alias Toby.Cursor
   alias Toby.Selection
   alias Toby.Stats.Server, as: Stats
 
@@ -26,15 +27,17 @@ defmodule Toby.Components.Load do
         %{load_cursor: cursor, utilization_opts: opts} = state
       )
       when ch == ?j or key == @arrow_down do
-    {:ok, %{state | load_cursor: min(cursor + 1, length(opts) - 1)}}
+    cursor = Cursor.next(cursor, length(opts))
+    {:ok, %{state | load_cursor: cursor}}
   end
 
   def handle_event(
         %{ch: ch, key: key},
-        %{load_cursor: cursor} = state
+        %{load_cursor: cursor, utilization_opts: opts} = state
       )
       when ch == ?k or key == @arrow_up do
-    {:ok, %{state | load_cursor: max(cursor - 1, 0)}}
+    cursor = Cursor.previous(cursor, length(opts))
+    {:ok, %{state | load_cursor: cursor}}
   end
 
   def handle_event(_event, state) do

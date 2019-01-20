@@ -9,6 +9,7 @@ defmodule Toby.Components.Port do
   import Ratatouille.Renderer.View
 
   alias Toby.Components.{Links, StatusBar}
+  alias Toby.Cursor
   alias Toby.Selection
   alias Toby.Stats.Server, as: Stats
 
@@ -30,15 +31,17 @@ defmodule Toby.Components.Port do
         %{port_cursor: cursor, ports: ports} = state
       )
       when ch == ?j or key == @arrow_down do
-    {:ok, %{state | port_cursor: min(cursor + 1, length(ports) - 1)}}
+    cursor = Cursor.next(cursor, length(ports))
+    {:ok, %{state | port_cursor: cursor}}
   end
 
   def handle_event(
         %{ch: ch, key: key},
-        %{port_cursor: cursor} = state
+        %{port_cursor: cursor, ports: ports} = state
       )
       when ch == ?k or key == @arrow_up do
-    {:ok, %{state | port_cursor: max(cursor - 1, 0)}}
+    cursor = Cursor.previous(cursor, length(ports))
+    {:ok, %{state | port_cursor: cursor}}
   end
 
   def handle_event(_event, state), do: {:ok, state}

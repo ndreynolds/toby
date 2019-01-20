@@ -11,6 +11,7 @@ defmodule Toby.Components.Process do
   import Toby.Formatting, only: [format_func: 1]
 
   alias Toby.Components.{Links, StatusBar}
+  alias Toby.Cursor
   alias Toby.Selection
   alias Toby.Stats.Server, as: Stats
 
@@ -32,15 +33,17 @@ defmodule Toby.Components.Process do
         %{process_cursor: cursor, processes: processes} = state
       )
       when ch == ?j or key == @arrow_down do
-    {:ok, %{state | process_cursor: min(cursor + 1, length(processes) - 1)}}
+    cursor = Cursor.next(cursor, length(processes))
+    {:ok, %{state | process_cursor: cursor}}
   end
 
   def handle_event(
         %{ch: ch, key: key},
-        %{process_cursor: cursor} = state
+        %{process_cursor: cursor, processes: processes} = state
       )
       when ch == ?k or key == @arrow_up do
-    {:ok, %{state | process_cursor: max(cursor - 1, 0)}}
+    cursor = Cursor.previous(cursor, length(processes))
+    {:ok, %{state | process_cursor: cursor}}
   end
 
   def handle_event(_event, state), do: {:ok, state}
