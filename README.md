@@ -8,7 +8,8 @@ respectively provide termbox bindings and a terminal UI kit for Elixir / Erlang.
 
 ![Applications Tab](doc/applications.png)
 ![Load Tab](doc/load-charts.png)
-![Processes](doc/processes.png)
+![Processes Tab](doc/processes.png)
+![System Tab](doc/system.png)
 
 ## Running It
 
