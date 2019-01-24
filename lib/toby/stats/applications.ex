@@ -4,9 +4,7 @@ defmodule Toby.Stats.Applications do
   """
 
   def applications do
-    apps = for {app, _desc, _vsn} <- :application.loaded_applications(), do: app
-
-    {:ok, apps}
+    {:ok, applications_in_tree()}
   end
 
   def application(app) do
@@ -48,14 +46,26 @@ defmodule Toby.Stats.Applications do
   defp application_controller, do: :erlang.whereis(:application_controller)
 
   defp application_master(app) do
-    {:links, app_masters} = process_info(application_controller(), :links)
-
-    Enum.find(app_masters, fn pid ->
+    Enum.find(application_masters(), fn pid ->
       case :application.get_application(pid) do
         {:ok, ^app} -> true
         _ -> false
       end
     end)
+  end
+
+  defp applications_in_tree do
+    Enum.flat_map(application_masters(), fn pid ->
+      case :application.get_application(pid) do
+        {:ok, app} -> [app]
+        _ -> []
+      end
+    end)
+  end
+
+  defp application_masters do
+    {:links, masters} = process_info(application_controller(), :links)
+    masters
   end
 
   defp process_info(pid, key), do: :erlang.process_info(pid, key)
