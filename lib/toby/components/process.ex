@@ -6,7 +6,7 @@ defmodule Toby.Components.Process do
   @behaviour Ratatouille.Component.Stateful
 
   import Ratatouille.Constants, only: [attribute: 1, color: 1, key: 1]
-  import Ratatouille.Renderer.View
+  import Ratatouille.View
 
   import Toby.Formatting, only: [format_func: 1]
 

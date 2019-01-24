@@ -5,7 +5,7 @@ defmodule Toby.Components.Links do
 
   @behaviour Ratatouille.Component.Stateless
 
-  import Ratatouille.Renderer.View
+  import Ratatouille.View
 
   @impl true
   def render(links) do

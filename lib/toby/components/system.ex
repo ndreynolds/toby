@@ -5,7 +5,7 @@ defmodule Toby.Components.System do
 
   @behaviour Ratatouille.Component.Stateful
 
-  import Ratatouille.Renderer.View
+  import Ratatouille.View
   import Toby.Formatting
 
   alias Toby.Components.StatusBar

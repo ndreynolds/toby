@@ -6,7 +6,7 @@ defmodule Toby.Components.Application do
   @behaviour Ratatouille.Component.Stateful
 
   import Ratatouille.Constants, only: [color: 1, key: 1]
-  import Ratatouille.Renderer.View
+  import Ratatouille.View
 
   alias Toby.Components.StatusBar
   alias Toby.Cursor

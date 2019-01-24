@@ -5,7 +5,7 @@ defmodule Toby.Components.StatusBar do
 
   @behaviour Ratatouille.Component.Stateless
 
-  import Ratatouille.Renderer.View
+  import Ratatouille.View
   import Ratatouille.Constants, only: [attribute: 1]
 
   @default_options [

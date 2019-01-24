@@ -5,7 +5,7 @@ defmodule Toby.Components.Memory do
 
   @behaviour Ratatouille.Component.Stateful
 
-  import Ratatouille.Renderer.View
+  import Ratatouille.View
 
   alias Toby.Components.StatusBar
 
