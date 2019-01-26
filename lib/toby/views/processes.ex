@@ -8,8 +8,8 @@ defmodule Toby.Views.Processes do
 
   import Toby.Formatting, only: [format_func: 1]
 
-  alias Toby.Views.Links
   alias Toby.Selection
+  alias Toby.Views.Links
 
   @style_header [
     attributes: [attribute(:bold)]

@@ -50,6 +50,8 @@ defmodule Toby.App do
   @impl true
   def update(model, msg) do
     case msg do
+      ## Change the selected tab:
+
       {:event, %{ch: ch}} when ch in [?s, ?S] ->
         reload(%{model | selected_tab: :system})
 
@@ -68,8 +70,15 @@ defmodule Toby.App do
       {:event, %{ch: ch}} when ch in [?a, ?A] ->
         reload(%{model | selected_tab: :applications})
 
+      ## Open or close an overlay:
+
       {:event, %{ch: ch}} when ch in [?n, ?N] ->
         %{model | overlay: :node_selection}
+
+      {:event, %{key: @escape}} ->
+        %{model | overlay: nil}
+
+      ## Move the active cursor:
 
       {:event, %{ch: ch, key: key}} when ch == ?j or key == @arrow_down ->
         model |> update_cursor(:next) |> reload()
@@ -77,17 +86,15 @@ defmodule Toby.App do
       {:event, %{ch: ch, key: key}} when ch == ?k or key == @arrow_up ->
         model |> update_cursor(:prev) |> reload()
 
-      {:event, %{key: @escape}} ->
-        %{model | overlay: nil}
+      ## Update the window in response to resize:
 
       {:resize, %{height: height, width: width}} ->
         %{model | window: %{height: height, width: width}}
 
+      ## Handle tick:
+
       :tick ->
         reload(model)
-
-      _ ->
-        model
     end
   end
 

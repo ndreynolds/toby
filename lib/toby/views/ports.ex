@@ -6,8 +6,8 @@ defmodule Toby.Views.Ports do
   import Ratatouille.Constants, only: [attribute: 1, color: 1]
   import Ratatouille.View
 
-  alias Toby.Views.Links
   alias Toby.Selection
+  alias Toby.Views.Links
 
   @style_header [
     attributes: [attribute(:bold)]
