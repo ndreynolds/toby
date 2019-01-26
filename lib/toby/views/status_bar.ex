@@ -1,9 +1,7 @@
-defmodule Toby.Components.StatusBar do
+defmodule Toby.Views.StatusBar do
   @moduledoc """
   A component that displays the status bar for navigation between views.
   """
-
-  @behaviour Ratatouille.Component.Stateless
 
   import Ratatouille.View
   import Ratatouille.Constants, only: [attribute: 1]
@@ -12,28 +10,21 @@ defmodule Toby.Components.StatusBar do
     {:system, "[S]ystem"},
     {:load, "[L]oad Charts"},
     {:memory, "[M]emory Allocators"},
-    {:application, "[A]pplications"},
-    {:process, "[P]rocesses"},
-    {:port, "Po[r]ts"}
+    {:applications, "[A]pplications"},
+    {:processes, "[P]rocesses"},
+    {:ports, "Po[r]ts"}
   ]
 
   @style_selected [
     attributes: [attribute(:bold)]
   ]
 
-  @impl true
-  def render(%{options: options} = attrs) do
+  def render(options \\ @default_options, selected) do
     bar do
       label do
-        render_options(options, attrs[:selected])
+        render_options(options, selected)
       end
     end
-  end
-
-  def render(%{} = attrs) do
-    attrs
-    |> Map.merge(%{options: @default_options})
-    |> render()
   end
 
   defp render_options(options, selected) do

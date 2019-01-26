@@ -1,4 +1,4 @@
-defmodule Toby.Stats.Server do
+defmodule Toby.Data.Server do
   @moduledoc """
   A caching layer on top of Toby.Stats.Provider so that system information can
   be retrieved on an interval independent of the window refresh rate.
@@ -6,7 +6,7 @@ defmodule Toby.Stats.Server do
 
   use GenServer
 
-  alias Toby.Stats.{Provider, Sampler}
+  alias Toby.Data.{Provider, Sampler}
 
   @cache_ms 2000
 

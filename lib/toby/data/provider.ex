@@ -1,4 +1,4 @@
-defmodule Toby.Stats.Provider do
+defmodule Toby.Data.Provider do
   @moduledoc """
   Provides statistics about the running Erlang VM for display in components.
 
@@ -7,7 +7,7 @@ defmodule Toby.Stats.Provider do
   throttled interface to this data to avoid overwhelming the system.
   """
 
-  alias Toby.Stats.Applications
+  alias Toby.Data.Applications
 
   def provide(:processes, _) do
     {:ok, for(pid <- :erlang.processes(), do: extended_process_info(pid))}

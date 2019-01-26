@@ -1,4 +1,4 @@
-defmodule Toby.Stats.Sampler do
+defmodule Toby.Data.Sampler do
   @moduledoc """
   Collects samples of the current VM state for later use in charts.
   """

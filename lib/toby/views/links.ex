@@ -1,13 +1,10 @@
-defmodule Toby.Components.Links do
+defmodule Toby.Views.Links do
   @moduledoc """
-  A partial view to display process or port links.
+  Builds a panel to display process or port links.
   """
-
-  @behaviour Ratatouille.Component.Stateless
 
   import Ratatouille.View
 
-  @impl true
   def render(links) do
     panel(title: "Links (#{length(links)})") do
       table do

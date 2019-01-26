@@ -1,19 +1,15 @@
-defmodule Toby.Components.Process do
+defmodule Toby.Views.Processes do
   @moduledoc """
-  A component for displaying information about processes
+  Builds a view for displaying information about processes
   """
 
-  @behaviour Ratatouille.Component.Stateful
-
-  import Ratatouille.Constants, only: [attribute: 1, color: 1, key: 1]
+  import Ratatouille.Constants, only: [attribute: 1, color: 1]
   import Ratatouille.View
 
   import Toby.Formatting, only: [format_func: 1]
 
-  alias Toby.Components.{Links, StatusBar}
-  alias Toby.Cursor
+  alias Toby.Views.Links
   alias Toby.Selection
-  alias Toby.Stats.Server, as: Stats
 
   @style_header [
     attributes: [attribute(:bold)]
@@ -24,9 +20,6 @@ defmodule Toby.Components.Process do
     background: color(:white)
   ]
 
-  @arrow_up key(:arrow_up)
-  @arrow_down key(:arrow_down)
-
   # The number of rows that make up the application and table frame, used to
   # calculate the number of displayable rows.
   #
@@ -35,75 +28,39 @@ defmodule Toby.Components.Process do
   # model in order to calculate this dynamically.
   @frame_rows 7
 
-  @impl true
-  def handle_event(
-        %{ch: ch, key: key},
-        %{process_cursor: cursor, processes: processes} = state
-      )
-      when ch == ?j or key == @arrow_down do
-    cursor = Cursor.next(cursor, length(processes))
-    {:ok, %{state | process_cursor: cursor}}
-  end
-
-  def handle_event(
-        %{ch: ch, key: key},
-        %{process_cursor: cursor, processes: processes} = state
-      )
-      when ch == ?k or key == @arrow_up do
-    cursor = Cursor.previous(cursor, length(processes))
-    {:ok, %{state | process_cursor: cursor}}
-  end
-
-  def handle_event(_event, state), do: {:ok, state}
-
-  @impl true
-  def handle_tick(state) do
-    {:ok,
-     Map.merge(state, %{
-       process_cursor: state[:process_cursor] || 0,
-       processes: Stats.fetch!(:processes)
-     })}
-  end
-
-  @impl true
-  def render(%{processes: all_processes, process_cursor: cursor, window: %{height: height}}) do
-    processes = Selection.slice(all_processes, height - @frame_rows, cursor)
-
+  def render(%{processes: all_processes, cursor: cursor}, window) do
+    processes = Selection.slice(all_processes, window.height - @frame_rows, cursor)
     selected = Enum.at(all_processes, cursor)
 
-    status_bar = StatusBar.render(%{selected: :process})
+    row do
+      column(size: 8) do
+        panel(title: "Processes", height: :fill) do
+          table do
+            table_row(@style_header) do
+              table_cell(content: "PID")
+              table_cell(content: "Name or Initial Func")
+              table_cell(content: "Reds")
+              table_cell(content: "Memory")
+              table_cell(content: "MsgQ")
+              table_cell(content: "Current Function")
+            end
 
-    view(bottom_bar: status_bar) do
-      row do
-        column(size: 8) do
-          panel(title: "Processes", height: :fill) do
-            table do
-              table_row(@style_header) do
-                table_cell(content: "PID")
-                table_cell(content: "Name or Initial Func")
-                table_cell(content: "Reds")
-                table_cell(content: "Memory")
-                table_cell(content: "MsgQ")
-                table_cell(content: "Current Function")
-              end
-
-              for proc <- processes do
-                table_row(if(proc == selected, do: @style_selected, else: [])) do
-                  table_cell(content: inspect(proc.pid))
-                  table_cell(content: name_or_initial_func(proc))
-                  table_cell(content: to_string(proc.reductions))
-                  table_cell(content: inspect(proc.memory))
-                  table_cell(content: to_string(proc.message_queue_len))
-                  table_cell(content: format_func(proc.current_function))
-                end
+            for proc <- processes do
+              table_row(if(proc == selected, do: @style_selected, else: [])) do
+                table_cell(content: inspect(proc.pid))
+                table_cell(content: name_or_initial_func(proc))
+                table_cell(content: to_string(proc.reductions))
+                table_cell(content: inspect(proc.memory))
+                table_cell(content: to_string(proc.message_queue_len))
+                table_cell(content: format_func(proc.current_function))
               end
             end
           end
         end
+      end
 
-        column(size: 4) do
-          render_process_details(selected)
-        end
+      column(size: 4) do
+        render_process_details(selected)
       end
     end
   end

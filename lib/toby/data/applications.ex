@@ -1,4 +1,4 @@
-defmodule Toby.Stats.Applications do
+defmodule Toby.Data.Applications do
   @moduledoc """
   Utilities for gathering application data such as the process tree.
   """
