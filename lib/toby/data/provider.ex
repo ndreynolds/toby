@@ -2,7 +2,7 @@ defmodule Toby.Data.Provider do
   @moduledoc """
   Provides statistics about the running Erlang VM for display in components.
 
-  Since these lookups can be expensive, access this data via `Toby.Stats.Server`
+  Since these lookups can be expensive, access this data via `Toby.Data.Server`
   instead of calling this module directly. The server module provides a
   throttled interface to this data to avoid overwhelming the system.
   """

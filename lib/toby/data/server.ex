@@ -1,6 +1,6 @@
 defmodule Toby.Data.Server do
   @moduledoc """
-  A caching layer on top of Toby.Stats.Provider so that system information can
+  A caching layer on top of `Toby.Data.Provider` so that system information can
   be retrieved on an interval independent of the window refresh rate.
   """
 
