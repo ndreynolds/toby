@@ -95,6 +95,11 @@ defmodule Toby.App do
 
       :tick ->
         reload(model)
+
+      ## Unhandled events (no update):
+
+      _ ->
+        model
     end
   end
 
