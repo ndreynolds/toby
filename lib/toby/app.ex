@@ -138,7 +138,11 @@ defmodule Toby.App do
   end
 
   defp reload(%{node: %{status: :not_loaded}} = model) do
-    {:ok, visible} = :net_adm.names()
+    visible_nodes =
+      case :net_adm.names() do
+        {:ok, visible} -> visible
+        {:error, _} -> []
+      end
 
     reload(%{
       model
@@ -146,7 +150,7 @@ defmodule Toby.App do
           current: Node.self(),
           cookie: Node.get_cookie(),
           connected_nodes: Node.list(),
-          visible_nodes: visible
+          visible_nodes: visible_nodes
         }
     })
   end
