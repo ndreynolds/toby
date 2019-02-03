@@ -9,7 +9,7 @@ defmodule Toby.Views.Processes do
   import Toby.Formatting, only: [format_func: 1]
 
   alias Toby.Selection
-  alias Toby.Views.Links
+  alias Toby.Views.{Links, Monitors}
 
   @style_header [
     attributes: [attribute(:bold)]
@@ -128,6 +128,7 @@ defmodule Toby.Views.Processes do
 
       label(content: "")
       Links.render(process.links)
+      Monitors.render(process.monitors, process.monitored_by)
     end
   end
 

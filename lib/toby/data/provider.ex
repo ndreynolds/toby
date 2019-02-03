@@ -10,11 +10,11 @@ defmodule Toby.Data.Provider do
   alias Toby.Data.Applications
 
   def provide(:processes, _) do
-    {:ok, for(pid <- :erlang.processes(), do: extended_process_info(pid))}
+    {:ok, for(pid <- Process.list(), do: extended_process_info(pid))}
   end
 
   def provide(:ports, _) do
-    {:ok, for(port <- :erlang.ports(), do: extended_port_info(port))}
+    {:ok, for(port <- Port.list(), do: extended_port_info(port))}
   end
 
   def provide(:applications, _) do
@@ -42,12 +42,12 @@ defmodule Toby.Data.Provider do
   def provide(:cpu, _) do
     {:ok,
      %{
-       logical_cpus: :erlang.system_info(:logical_processors),
-       online_logical_cpus: :erlang.system_info(:logical_processors),
-       available_logical_cpus: :erlang.system_info(:logical_processors),
-       schedulers: :erlang.system_info(:schedulers),
-       online_schedulers: :erlang.system_info(:schedulers_online),
-       available_schedulers: :erlang.system_info(:schedulers_online)
+       logical_cpus: system_info(:logical_processors),
+       online_logical_cpus: system_info(:logical_processors),
+       available_logical_cpus: system_info(:logical_processors),
+       schedulers: system_info(:schedulers),
+       online_schedulers: system_info(:schedulers_online),
+       available_schedulers: system_info(:schedulers_online)
      }}
   end
 
@@ -120,27 +120,36 @@ defmodule Toby.Data.Provider do
   end
 
   def extended_process_info(pid) do
-    {:memory, memory} = :erlang.process_info(pid, :memory)
+    {:memory, memory} = Process.info(pid, :memory)
+    {:monitors, monitors} = Process.info(pid, :monitors)
+    {:monitored_by, monitored_by} = Process.info(pid, :monitored_by)
 
     pid
-    |> process_info()
+    |> Process.info()
     |> Enum.into(%{
       pid: pid,
-      memory: memory
+      memory: memory,
+      monitors: monitors,
+      monitored_by: monitored_by
     })
   end
 
   def extended_port_info(port) do
-    case :erlang.port_info(port) do
+    case Port.info(port) do
       :undefined ->
         %{}
 
       info ->
+        {:monitors, monitors} = Port.info(port, :monitors)
+        {:monitored_by, monitored_by} = Port.info(port, :monitored_by)
+
         info
         |> Enum.into(%{})
         |> Map.merge(%{
           id: port,
-          slot: info[:id]
+          slot: info[:id],
+          monitors: monitors,
+          monitored_by: monitored_by
         })
     end
   end
@@ -157,6 +166,5 @@ defmodule Toby.Data.Provider do
     total_ms
   end
 
-  defp process_info(pid), do: :erlang.process_info(pid)
   defp system_info(key), do: :erlang.system_info(key)
 end

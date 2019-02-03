@@ -7,7 +7,7 @@ defmodule Toby.Views.Ports do
   import Ratatouille.View
 
   alias Toby.Selection
-  alias Toby.Views.Links
+  alias Toby.Views.{Links, Monitors}
 
   @style_header [
     attributes: [attribute(:bold)]
@@ -102,6 +102,7 @@ defmodule Toby.Views.Ports do
 
       label(content: "")
       Links.render(port.links)
+      Monitors.render(port.monitors, port.monitored_by)
     end
   end
 
