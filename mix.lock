@@ -7,6 +7,5 @@
   "elixir_make": {:hex, :elixir_make, "0.4.2", "332c649d08c18bc1ecc73b1befc68c647136de4f340b548844efc796405743bf", [:mix], [], "hexpm"},
   "ex_termbox": {:hex, :ex_termbox, "0.3.4", "f3d8f8ca6f0eb00c66426aaf57bd32092d86440d2a44cfd671d8688a367d54a0", [:make, :mix], [{:elixir_make, "~> 0.4", [hex: :elixir_make, repo: "hexpm", optional: false]}], "hexpm"},
   "jason": {:hex, :jason, "1.1.2", "b03dedea67a99223a2eaf9f1264ce37154564de899fd3d8b9a21b1a6fd64afe7", [:mix], [{:decimal, "~> 1.0", [hex: :decimal, repo: "hexpm", optional: true]}], "hexpm"},
-  "logger_file_backend": {:hex, :logger_file_backend, "0.0.10", "876f9f84ae110781207c54321ffbb62bebe02946fe3c13f0d7c5f5d8ad4fa910", [:mix], [], "hexpm"},
-  "ratatouille": {:git, "https://github.com/ndreynolds/ratatouille", "6253c419a3837af67c5236102626f54cd47cf0ed", []},
+  "ratatouille": {:git, "https://github.com/ndreynolds/ratatouille", "c98d4779f49de2d661021ba683b65c30a0abe481", []},
 }

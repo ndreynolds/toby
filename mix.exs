@@ -25,8 +25,7 @@ defmodule Toby.Mixfile do
     [
       {:ratatouille, git: "https://github.com/ndreynolds/ratatouille"},
       {:credo, "~> 1.0", runtime: false},
-      {:distillery, "~> 2.0"},
-      {:logger_file_backend, "~> 0.0.10"}
+      {:distillery, "~> 2.0"}
     ]
   end
 
