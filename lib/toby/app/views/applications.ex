@@ -1,4 +1,4 @@
-defmodule Toby.Views.Applications do
+defmodule Toby.App.Views.Applications do
   @moduledoc """
   Builds a view that displays information about OTP applications
   """
@@ -17,7 +17,7 @@ defmodule Toby.Views.Applications do
         panel(title: "Applications") do
           table do
             for {app, i} <- Enum.with_index(apps) do
-              table_row(if(cursor == i, do: @style_selected, else: [])) do
+              table_row(if(cursor.position == i, do: @style_selected, else: [])) do
                 table_cell(content: to_string(app))
               end
             end

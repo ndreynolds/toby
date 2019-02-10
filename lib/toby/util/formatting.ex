@@ -1,4 +1,4 @@
-defmodule Toby.Formatting do
+defmodule Toby.Util.Formatting do
   @moduledoc """
   Provides formatting helpers for various values.
   """

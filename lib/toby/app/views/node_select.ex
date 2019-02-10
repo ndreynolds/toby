@@ -1,4 +1,4 @@
-defmodule Toby.Views.NodeSelect do
+defmodule Toby.App.Views.NodeSelect do
   @moduledoc """
   Builds a panel for managing the selected Erlang node.
 

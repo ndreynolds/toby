@@ -1,4 +1,4 @@
-defmodule Toby.Views.Monitors do
+defmodule Toby.App.Views.Monitors do
   @moduledoc """
   Builds a panel to display process or port links.
   """

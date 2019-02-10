@@ -1,4 +1,4 @@
-defmodule Toby.Views.Load do
+defmodule Toby.App.Views.Load do
   @moduledoc """
   Builds a view for displaying information about system load
   """
@@ -6,7 +6,7 @@ defmodule Toby.Views.Load do
   import Ratatouille.Constants, only: [color: 1]
   import Ratatouille.View
 
-  alias Toby.Selection
+  alias Toby.Util.Selection
 
   @style_selected [
     color: color(:black),
@@ -21,8 +21,8 @@ defmodule Toby.Views.Load do
         cursor: cursor
       }) do
     util_opts = build_utilization_opts(scheduler_count)
-    visible_util_opts = Selection.slice(util_opts, 6, cursor)
-    util_series = selected_utilization_series(utilization, util_opts, cursor)
+    visible_util_opts = Selection.slice(util_opts, 6, cursor.position)
+    util_series = selected_utilization_series(utilization, util_opts, cursor.position)
 
     row do
       column size: 12 do
@@ -36,7 +36,7 @@ defmodule Toby.Views.Load do
               panel title: "Selection", height: 10 do
                 table do
                   for {{label, _key}, idx} <- visible_util_opts do
-                    table_row(if(idx == cursor, do: @style_selected, else: [])) do
+                    table_row(if(idx == cursor.position, do: @style_selected, else: [])) do
                       table_cell(content: label)
                     end
                   end

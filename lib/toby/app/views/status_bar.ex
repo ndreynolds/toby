@@ -1,4 +1,4 @@
-defmodule Toby.Views.StatusBar do
+defmodule Toby.App.Views.StatusBar do
   @moduledoc """
   A component that displays the status bar for navigation between views.
   """
@@ -6,7 +6,7 @@ defmodule Toby.Views.StatusBar do
   import Ratatouille.View
   import Ratatouille.Constants, only: [attribute: 1]
 
-  @default_options [
+  @tabs [
     {:system, "[S]ystem"},
     {:load, "[L]oad Charts"},
     {:memory, "[M]emory Allocators"},
@@ -19,17 +19,24 @@ defmodule Toby.Views.StatusBar do
     attributes: [attribute(:bold)]
   ]
 
-  def render(options \\ @default_options, selected) do
+  def render(selected_tab, search) do
     bar do
-      label do
-        render_options(options, selected)
+      if search.focused do
+        label do
+          text(attributes: [attribute(:bold)], content: "Search: ")
+          text(content: search.query)
+        end
+      else
+        label do
+          render_tabs(selected_tab)
+        end
       end
     end
   end
 
-  defp render_options(options, selected) do
+  defp render_tabs(selected) do
     rendered_options =
-      for {key, label} <- options do
+      for {key, label} <- @tabs do
         if key == selected do
           text(@style_selected ++ [content: label])
         else

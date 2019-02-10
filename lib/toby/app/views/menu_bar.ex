@@ -1,4 +1,4 @@
-defmodule Toby.Views.MenuBar do
+defmodule Toby.App.Views.MenuBar do
   @moduledoc """
   Builds the menu bar for the application.
   """

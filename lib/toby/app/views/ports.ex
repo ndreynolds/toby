@@ -1,4 +1,4 @@
-defmodule Toby.Views.Ports do
+defmodule Toby.App.Views.Ports do
   @moduledoc """
   Builds a view for displaying information about ports
   """
@@ -6,8 +6,8 @@ defmodule Toby.Views.Ports do
   import Ratatouille.Constants, only: [attribute: 1, color: 1]
   import Ratatouille.View
 
-  alias Toby.Selection
-  alias Toby.Views.{Links, Monitors}
+  alias Toby.App.Views.{Links, Monitors}
+  alias Toby.Util.Selection
 
   @style_header [
     attributes: [attribute(:bold)]
@@ -22,8 +22,8 @@ defmodule Toby.Views.Ports do
   @frame_rows 7
 
   def render(%{ports: all_ports, cursor: cursor}, window) do
-    ports = Selection.slice(all_ports, window.height - @frame_rows, cursor)
-    selected = Enum.at(all_ports, cursor)
+    ports = Selection.slice(all_ports, window.height - @frame_rows, cursor.position)
+    selected = Enum.at(all_ports, cursor.position)
 
     row do
       column(size: 8) do

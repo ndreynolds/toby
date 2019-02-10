@@ -9,6 +9,22 @@ defmodule Toby.Data.Provider do
 
   alias Toby.Data.Applications
 
+  def provide(:node, _) do
+    visible_nodes =
+      case :net_adm.names() do
+        {:ok, visible} -> visible
+        {:error, _} -> []
+      end
+
+    {:ok,
+     %{
+       current: Node.self(),
+       cookie: Node.get_cookie(),
+       connected_nodes: Node.list(),
+       visible_nodes: visible_nodes
+     }}
+  end
+
   def provide(:processes, _) do
     {:ok, for(pid <- Process.list(), do: extended_process_info(pid))}
   end

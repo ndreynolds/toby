@@ -1,4 +1,4 @@
-defmodule Toby.Views.Memory do
+defmodule Toby.App.Views.Memory do
   @moduledoc """
   TODO: Builds a view for displaying information about memory usage
   """

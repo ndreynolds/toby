@@ -1,4 +1,4 @@
-defmodule Toby.Selection do
+defmodule Toby.Util.Selection do
   @moduledoc """
   Utils for managing a user selection with a collection
   """

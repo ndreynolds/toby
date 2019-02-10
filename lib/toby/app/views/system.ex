@@ -1,10 +1,10 @@
-defmodule Toby.Views.System do
+defmodule Toby.App.Views.System do
   @moduledoc """
   A component that displays summarized information about the Erlang VM.
   """
 
   import Ratatouille.View
-  import Toby.Formatting
+  import Toby.Util.Formatting
 
   def render(%{
         cpu: cpu,

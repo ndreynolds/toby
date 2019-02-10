@@ -1,4 +1,4 @@
-defmodule Toby.Views.Processes do
+defmodule Toby.App.Views.Processes do
   @moduledoc """
   Builds a view for displaying information about processes
   """
@@ -6,10 +6,10 @@ defmodule Toby.Views.Processes do
   import Ratatouille.Constants, only: [attribute: 1, color: 1]
   import Ratatouille.View
 
-  import Toby.Formatting, only: [format_func: 1]
+  import Toby.Util.Formatting, only: [format_func: 1]
 
-  alias Toby.Selection
-  alias Toby.Views.{Links, Monitors}
+  alias Toby.App.Views.{Links, Monitors}
+  alias Toby.Util.Selection
 
   @style_header [
     attributes: [attribute(:bold)]
@@ -29,8 +29,8 @@ defmodule Toby.Views.Processes do
   @frame_rows 7
 
   def render(%{processes: all_processes, cursor: cursor}, window) do
-    processes = Selection.slice(all_processes, window.height - @frame_rows, cursor)
-    selected = Enum.at(all_processes, cursor)
+    processes = Selection.slice(all_processes, window.height - @frame_rows, cursor.position)
+    selected = Enum.at(all_processes, cursor.position)
 
     row do
       column(size: 8) do

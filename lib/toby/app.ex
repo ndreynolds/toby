@@ -5,10 +5,9 @@ defmodule Toby.App do
 
   @behaviour Ratatouille.App
 
-  alias Toby.Cursor
-  alias Toby.Data.Server, as: Data
+  alias Toby.App.Update
 
-  alias Toby.Views.{
+  alias Toby.App.Views.{
     Applications,
     Load,
     Memory,
@@ -25,7 +24,22 @@ defmodule Toby.App do
 
   @arrow_up key(:arrow_up)
   @arrow_down key(:arrow_down)
-  @escape key(:esc)
+
+  @tab_keymap %{
+    ?s => :system,
+    ?S => :system,
+    ?l => :load,
+    ?L => :load,
+    ?m => :memory,
+    ?M => :memory,
+    ?a => :applications,
+    ?A => :applications,
+    ?p => :processes,
+    ?P => :processes,
+    ?r => :ports,
+    ?R => :ports
+  }
+  @tab_keys Map.keys(@tab_keymap)
 
   @impl true
   def model(%{window: window}) do
@@ -42,6 +56,10 @@ defmodule Toby.App do
       node: %{
         status: :not_loaded
       },
+      search: %{
+        focused: false,
+        query: ""
+      },
       overlay: nil,
       window: window
     }
@@ -49,52 +67,45 @@ defmodule Toby.App do
 
   @impl true
   def update(model, msg) do
-    case msg do
+    case {model, msg} do
+      ## Search:
+
+      {_, {:event, %{ch: ?/}}} ->
+        Update.focus_search(model)
+
+      {%{search: %{focused: true}}, {:event, event}} ->
+        Update.search(model, event)
+
       ## Change the selected tab:
 
-      {:event, %{ch: ch}} when ch in [?s, ?S] ->
-        reload(%{model | selected_tab: :system})
+      {_, {:event, %{ch: ch}}} when ch in @tab_keys ->
+        Update.select_tab(model, @tab_keymap[ch])
 
-      {:event, %{ch: ch}} when ch in [?l, ?L] ->
-        reload(%{model | selected_tab: :load})
+      ## Show or act on an overlay:
 
-      {:event, %{ch: ch}} when ch in [?m, ?M] ->
-        reload(%{model | selected_tab: :memory})
+      {_, {:event, %{ch: ch}}} when ch in [?n, ?N] ->
+        Update.show_overlay(model, :node_selection)
 
-      {:event, %{ch: ch}} when ch in [?p, ?P] ->
-        reload(%{model | selected_tab: :processes})
-
-      {:event, %{ch: ch}} when ch in [?r, ?R] ->
-        reload(%{model | selected_tab: :ports})
-
-      {:event, %{ch: ch}} when ch in [?a, ?A] ->
-        reload(%{model | selected_tab: :applications})
-
-      ## Open or close an overlay:
-
-      {:event, %{ch: ch}} when ch in [?n, ?N] ->
-        %{model | overlay: :node_selection}
-
-      {:event, %{key: @escape}} ->
-        %{model | overlay: nil}
+      {%{overlay: overlay}, {:event, event}} when not is_nil(overlay) ->
+        Update.overlay_action(model, event)
 
       ## Move the active cursor:
 
-      {:event, %{ch: ch, key: key}} when ch == ?j or key == @arrow_down ->
-        model |> update_cursor(:next) |> reload()
+      {_, {:event, %{ch: ch, key: key}}} when ch == ?j or key == @arrow_down ->
+        Update.move_cursor(model, :next)
 
-      {:event, %{ch: ch, key: key}} when ch == ?k or key == @arrow_up ->
-        model |> update_cursor(:prev) |> reload()
+      {_, {:event, %{ch: ch, key: key}}} when ch == ?k or key == @arrow_up ->
+        Update.move_cursor(model, :prev)
 
       ## Update the window in response to resize:
 
-      {:resize, %{height: height, width: width}} ->
-        %{model | window: %{height: height, width: width}}
+      {_, {:resize, event}} ->
+        Update.resize(model, event)
 
       ## Handle tick:
 
-      :tick ->
-        reload(model)
+      {_, :tick} ->
+        Update.reload(model)
 
       ## Unhandled events (no update):
 
@@ -104,9 +115,9 @@ defmodule Toby.App do
   end
 
   @impl true
-  def render(%{selected_tab: selected_tab, node: node, window: window} = model) do
+  def render(%{selected_tab: selected_tab, search: search, node: node, window: window} = model) do
     menu_bar = MenuBar.render(node)
-    status_bar = StatusBar.render(selected_tab)
+    status_bar = StatusBar.render(selected_tab, search)
 
     view(top_bar: menu_bar, bottom_bar: status_bar) do
       case selected_tab do
@@ -135,98 +146,5 @@ defmodule Toby.App do
         end
       end
     end
-  end
-
-  defp reload(%{node: %{status: :not_loaded}} = model) do
-    visible_nodes =
-      case :net_adm.names() do
-        {:ok, visible} -> visible
-        {:error, _} -> []
-      end
-
-    reload(%{
-      model
-      | node: %{
-          current: Node.self(),
-          cookie: Node.get_cookie(),
-          connected_nodes: Node.list(),
-          visible_nodes: visible_nodes
-        }
-    })
-  end
-
-  defp reload(%{selected_tab: :system} = model) do
-    put_in(model, [:tabs, :system], %{
-      cpu: Data.fetch!(:cpu),
-      limits: Data.fetch!(:limits),
-      memory: Data.fetch!(:memory),
-      statistics: Data.fetch!(:statistics),
-      system: Data.fetch!(:system)
-    })
-  end
-
-  defp reload(%{selected_tab: :applications} = model) do
-    applications = Data.fetch!(:applications) |> Enum.sort_by(&to_string/1)
-    cursor = model.tabs.applications[:cursor] || 0
-    selected_key = Enum.at(applications, cursor)
-
-    put_in(model, [:tabs, :applications], %{
-      applications: applications,
-      selected: Data.fetch!({:application, selected_key}),
-      cursor: cursor,
-      size: length(applications)
-    })
-  end
-
-  defp reload(%{selected_tab: :processes} = model) do
-    processes = Data.fetch!(:processes)
-
-    put_in(model, [:tabs, :processes], %{
-      processes: processes,
-      cursor: model.tabs.processes[:cursor] || 0,
-      size: length(processes)
-    })
-  end
-
-  defp reload(%{selected_tab: :ports} = model) do
-    ports = Data.fetch!(:ports)
-
-    put_in(model, [:tabs, :ports], %{
-      ports: ports,
-      cursor: model.tabs.ports[:cursor] || 0,
-      size: length(ports)
-    })
-  end
-
-  defp reload(%{selected_tab: :load} = model) do
-    %{schedulers: scheduler_count} = Data.fetch!(:cpu)
-
-    put_in(model, [:tabs, :load], %{
-      utilization: Data.fetch!(:historical_scheduler_utilization),
-      scheduler_count: scheduler_count,
-      memory: Data.fetch!(:historical_memory),
-      io: Data.fetch!(:historical_io),
-      cursor: model.tabs.load[:cursor] || 0,
-      size: scheduler_count + 1
-    })
-  end
-
-  defp reload(model) do
-    model
-  end
-
-  defp update_cursor(model, direction) do
-    update_in(model, [:tabs, model.selected_tab, :cursor], fn
-      nil ->
-        nil
-
-      cursor ->
-        size = model.tabs[model.selected_tab].size
-
-        case direction do
-          :prev -> Cursor.previous(cursor, size)
-          :next -> Cursor.next(cursor, size)
-        end
-    end)
   end
 end
