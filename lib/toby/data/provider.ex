@@ -10,18 +10,22 @@ defmodule Toby.Data.Provider do
   alias Toby.Data.Applications
 
   def provide(:node, _) do
-    visible_nodes =
-      case :net_adm.names() do
-        {:ok, visible} -> visible
-        {:error, _} -> []
-      end
+    # TODO: It's not safe to call this here because of the possible timeout when
+    # epmd is not running. The call should be moved to another process which
+    # populates the value for retrieval here.
+    #
+    # visible_nodes =
+    #   case :net_adm.names() do
+    #     {:ok, visible} -> visible
+    #     {:error, _} -> []
+    #   end
 
     {:ok,
      %{
        current: Node.self(),
        cookie: Node.get_cookie(),
        connected_nodes: Node.list(),
-       visible_nodes: visible_nodes
+       visible_nodes: []
      }}
   end
 
