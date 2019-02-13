@@ -8,8 +8,6 @@ defmodule Toby.App.Views.NodeSelect do
   import Ratatouille.View
   import Ratatouille.Constants, only: [attribute: 1]
 
-  @bold attribute(:bold)
-
   def render(%{
         current: current,
         cookie: cookie,
@@ -31,27 +29,28 @@ defmodule Toby.App.Views.NodeSelect do
         end
       end
 
-      panel(title: "Connected Nodes") do
-        table do
-          for node <- connected do
-            table_row do
-              table_cell(content: to_string(node))
+      row do
+        column(size: 6) do
+          panel(title: "Connected Nodes") do
+            table do
+              for node <- connected do
+                table_row do
+                  table_cell(content: to_string(node))
+                end
+              end
             end
           end
         end
-      end
 
-      panel(title: "Visible Nodes") do
-        table do
-          table_row(attributes: [@bold]) do
-            table_cell(content: "Name")
-            table_cell(content: "Port")
-          end
-
-          for {node, port} <- visible do
-            table_row do
-              table_cell(content: to_string(node))
-              table_cell(content: to_string(port))
+        column(size: 6) do
+          panel(title: "Visible Nodes") do
+            table do
+              for {node, port} <- visible do
+                table_row do
+                  table_cell(content: to_string(node))
+                  table_cell(content: to_string(port))
+                end
+              end
             end
           end
         end
