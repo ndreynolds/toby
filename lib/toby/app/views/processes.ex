@@ -28,9 +28,11 @@ defmodule Toby.App.Views.Processes do
   # model in order to calculate this dynamically.
   @frame_rows 7
 
-  def render(%{processes: all_processes, cursor: cursor}, window) do
-    processes = Selection.slice(all_processes, window.height - @frame_rows, cursor.position)
-    selected = Enum.at(all_processes, cursor.position)
+  def render(%{filtered: processes, cursor: cursor}, window) do
+    processes_slice =
+      Selection.slice(processes, window.height - @frame_rows, cursor.position)
+
+    selected = Enum.at(processes, cursor.position)
 
     row do
       column(size: 8) do
@@ -45,7 +47,7 @@ defmodule Toby.App.Views.Processes do
               table_cell(content: "Current Function")
             end
 
-            for proc <- processes do
+            for proc <- processes_slice do
               table_row(if(proc == selected, do: @style_selected, else: [])) do
                 table_cell(content: inspect(proc.pid))
                 table_cell(content: name_or_initial_func(proc))

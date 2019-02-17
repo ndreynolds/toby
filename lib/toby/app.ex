@@ -5,6 +5,8 @@ defmodule Toby.App do
 
   @behaviour Ratatouille.App
 
+  alias Ratatouille.Runtime.{Command, Subscription}
+
   alias Toby.App.Update
 
   alias Toby.App.Views.{
@@ -41,21 +43,21 @@ defmodule Toby.App do
   }
   @tab_keys Map.keys(@tab_keymap)
 
+  @init_cursor %{position: 0, size: 0}
+
   @impl true
-  def model(%{window: window}) do
-    %{
+  def init(%{window: window}) do
+    model = %{
       selected_tab: :system,
       tabs: %{
-        system: %{status: :not_loaded},
-        load: %{status: :not_loaded},
-        memory: %{status: :not_loaded},
-        applications: %{status: :not_loaded},
-        processes: %{status: :not_loaded},
-        ports: %{status: :not_loaded}
+        system: %{data: :not_loaded},
+        load: %{data: :not_loaded, cursor: @init_cursor},
+        memory: %{data: :not_loaded},
+        applications: %{data: :not_loaded, cursor: @init_cursor},
+        processes: %{data: :not_loaded, cursor: @init_cursor},
+        ports: %{data: :not_loaded, cursor: @init_cursor}
       },
-      node: %{
-        status: :not_loaded
-      },
+      node: :not_loaded,
       search: %{
         focused: false,
         query: ""
@@ -63,6 +65,12 @@ defmodule Toby.App do
       overlay: nil,
       window: window
     }
+
+    {model,
+     Command.batch([
+       Update.request_tab_refresh(model),
+       Update.request_node_refresh()
+     ])}
   end
 
   @impl true
@@ -105,7 +113,13 @@ defmodule Toby.App do
       ## Handle tick:
 
       {_, :tick} ->
-        Update.reload(model)
+        {model, Update.request_tab_refresh(model)}
+
+      {_, {{:refreshed, :node}, data}} ->
+        %{model | node: data}
+
+      {_, {{:refreshed, tab}, data}} ->
+        Update.refresh_tab(model, tab, data)
 
       ## Unhandled events (no update):
 
@@ -115,36 +129,54 @@ defmodule Toby.App do
   end
 
   @impl true
-  def render(%{selected_tab: selected_tab, search: search, node: node, window: window} = model) do
+  def subscribe(_model) do
+    Subscription.interval(1_000, :tick)
+  end
+
+  @impl true
+  def render(%{selected_tab: selected_tab, search: search, node: node} = model) do
     menu_bar = MenuBar.render(node)
     status_bar = StatusBar.render(selected_tab, search)
+    tab_loaded? = model.tabs[selected_tab].data != :not_loaded
 
     view(top_bar: menu_bar, bottom_bar: status_bar) do
-      case selected_tab do
-        :system ->
-          System.render(model.tabs.system)
-
-        :load ->
-          Load.render(model.tabs.load)
-
-        :memory ->
-          Memory.render(model.tabs.memory)
-
-        :applications ->
-          Applications.render(model.tabs.applications)
-
-        :processes ->
-          Processes.render(model.tabs.processes, window)
-
-        :ports ->
-          Ports.render(model.tabs.ports, window)
+      if tab_loaded? do
+        tab_view(model)
+      else
+        label(content: "Loading...")
       end
 
-      if model.overlay == :node_selection do
-        overlay(padding: 10) do
-          NodeSelect.render(model.node)
-        end
-      end
+      overlay_view(model)
     end
   end
+
+  def tab_view(model) do
+    case model.selected_tab do
+      :system ->
+        System.render(model.tabs.system)
+
+      :load ->
+        Load.render(model.tabs.load)
+
+      :memory ->
+        Memory.render(model.tabs.memory)
+
+      :applications ->
+        Applications.render(model.tabs.applications)
+
+      :processes ->
+        Processes.render(model.tabs.processes, model.window)
+
+      :ports ->
+        Ports.render(model.tabs.ports, model.window)
+    end
+  end
+
+  def overlay_view(%{overlay: :node_selection, node: node}) do
+    overlay(padding: 10) do
+      NodeSelect.render(node)
+    end
+  end
+
+  def overlay_view(_other), do: nil
 end

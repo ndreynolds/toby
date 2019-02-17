@@ -5,7 +5,7 @@ defmodule Toby.App.Views.Memory do
 
   import Ratatouille.View
 
-  def render(%{}) do
+  def render(_) do
     row do
       column(size: 12) do
         panel title: "Carrier Size (MB)" do

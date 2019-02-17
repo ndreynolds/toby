@@ -6,7 +6,12 @@ defmodule Toby.App.Views.NodeSelect do
   """
 
   import Ratatouille.View
-  import Ratatouille.Constants, only: [attribute: 1]
+
+  def render(:not_loaded) do
+    panel(title: "Node Selection (<ESC> to close)", height: :fill) do
+      label(content: "Loading...")
+    end
+  end
 
   def render(%{
         current: current,

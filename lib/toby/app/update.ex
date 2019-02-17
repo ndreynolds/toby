@@ -3,9 +3,11 @@ defmodule Toby.App.Update do
   Functions to update the model
   """
 
+  alias Toby.Data.Server, as: Data
   alias Toby.Util.Cursor
 
-  import Toby.Data.Server, only: [fetch!: 1]
+  alias Ratatouille.Runtime.Command
+
   import Ratatouille.Constants, only: [key: 1]
 
   @escape key(:esc)
@@ -35,10 +37,6 @@ defmodule Toby.App.Update do
     %{model | window: %{height: height, width: width}}
   end
 
-  def select_tab(model, id) do
-    reload(%{model | selected_tab: id})
-  end
-
   def show_overlay(model, :node_selection) do
     %{model | overlay: :node_selection}
   end
@@ -52,108 +50,84 @@ defmodule Toby.App.Update do
   end
 
   def move_cursor(model, direction) do
-    model
-    |> update_in([:tabs, model.selected_tab, :cursor], &new_cursor(&1, direction))
-    |> reload()
+    new_model =
+      update_in(model, [:tabs, model.selected_tab, :cursor], &new_cursor(&1, direction))
+
+    {new_model, request_tab_refresh(new_model)}
   end
 
   defp new_cursor(nil, _direction), do: nil
   defp new_cursor(cursor, :prev), do: Cursor.previous(cursor)
   defp new_cursor(cursor, :next), do: Cursor.next(cursor)
 
-  def reload(%{node: %{status: :not_loaded}} = model) do
-    reload(%{model | node: data_for(:node)})
+  def select_tab(model, id) do
+    new_model = %{model | selected_tab: id}
+    {new_model, request_tab_refresh(new_model)}
   end
 
-  def reload(%{selected_tab: :system} = model) do
-    update_tab(model, :system)
+  def request_node_refresh do
+    Command.new(fn -> Data.fetch!(:node) end, {:refreshed, :node})
   end
 
-  def reload(%{selected_tab: :applications} = model) do
-    update_tab(model, :applications, fn data ->
-      cursor =
-        model
-        |> fetch_tab_cursor(:applications)
-        |> Cursor.put_size(length(data.applications))
+  def request_tab_refresh(%{selected_tab: :applications} = model) do
+    Command.new(
+      fn ->
+        data = Data.fetch!(:applications)
 
-      selected = fetch!({:application, Enum.at(data.applications, cursor.position)})
+        cursor =
+          Cursor.put_size(model.tabs.applications.cursor, length(data.applications))
 
-      Map.merge(data, %{selected: selected, cursor: cursor})
-    end)
+        selected = Enum.at(data.applications, cursor.position)
+        selected_data = Data.fetch!({:application, selected})
+
+        %{
+          applications: data.applications,
+          selected_application: selected_data
+        }
+      end,
+      {:refreshed, :applications}
+    )
   end
 
-  def reload(%{selected_tab: :processes, search: %{query: query}} = model) do
-    update_tab(model, :processes, fn data ->
-      filtered_processes = filter(:processes, data.processes, query)
-
-      cursor =
-        model
-        |> fetch_tab_cursor(:processes)
-        |> Cursor.put_size(length(filtered_processes))
-
-      Map.merge(data, %{cursor: cursor, processes: filtered_processes})
-    end)
+  def request_tab_refresh(%{selected_tab: tab}) do
+    Command.new(
+      fn -> Data.fetch!(tab) end,
+      {:refreshed, tab}
+    )
   end
 
-  def reload(%{selected_tab: :ports} = model) do
-    update_tab(model, :ports, fn data ->
-      cursor =
-        model
-        |> fetch_tab_cursor(:ports)
-        |> Cursor.put_size(length(data.ports))
-
-      Map.merge(data, %{cursor: cursor})
-    end)
-  end
-
-  def reload(%{selected_tab: :load} = model) do
-    update_tab(model, :load, fn data ->
-      cursor =
-        model
-        |> fetch_tab_cursor(:load)
-        |> Cursor.put_size(data.scheduler_count + 1)
-
-      Map.merge(data, %{cursor: cursor})
-    end)
-  end
-
-  def reload(model) do
+  def refresh_tab(model, tab, data) do
     model
+    |> put_in([:tabs, tab, :data], data)
+    |> after_tab_refresh(tab, data)
   end
 
-  defp data_for(:node) do
-    fetch!(:node)
+  defp after_tab_refresh(model, :processes, data) do
+    filtered_processes = filter(:processes, data.processes, model.search.query)
+
+    model
+    |> update_tab_cursor(:processes, &Cursor.put_size(&1, length(data.processes)))
+    |> put_in([:tabs, :processes, :filtered], filtered_processes)
   end
 
-  defp data_for(:system) do
-    %{
-      cpu: fetch!(:cpu),
-      limits: fetch!(:limits),
-      memory: fetch!(:memory),
-      statistics: fetch!(:statistics),
-      system: fetch!(:system)
-    }
+  defp after_tab_refresh(model, :ports, data) do
+    update_tab_cursor(model, :ports, &Cursor.put_size(&1, length(data.ports)))
   end
 
-  defp data_for(:applications) do
-    %{applications: fetch!(:applications) |> Enum.sort_by(&to_string/1)}
+  defp after_tab_refresh(model, :load, data) do
+    update_tab_cursor(model, :load, &Cursor.put_size(&1, data.scheduler_count + 1))
   end
 
-  defp data_for(:processes) do
-    %{processes: fetch!(:processes)}
+  defp after_tab_refresh(model, :applications, data) do
+    update_tab_cursor(
+      model,
+      :applications,
+      &Cursor.put_size(&1, length(data.applications))
+    )
   end
 
-  defp data_for(:ports) do
-    %{ports: fetch!(:ports)}
-  end
-
-  defp data_for(:load) do
-    %{
-      utilization: fetch!(:historical_scheduler_utilization),
-      scheduler_count: fetch!(:cpu).schedulers,
-      memory: fetch!(:historical_memory),
-      io: fetch!(:historical_io)
-    }
+  defp after_tab_refresh(model, _tab, _data) do
+    model
   end
 
   defp filter(:processes, processes, ""), do: processes
@@ -166,13 +140,9 @@ defmodule Toby.App.Update do
     end)
   end
 
-  defp fetch_tab_cursor(model, tab) do
-    model[:tabs][tab][:cursor] || %{position: 0, size: 0}
-  end
-
-  defp update_tab(model, tab, transform_fn \\ & &1) do
-    data = tab |> data_for() |> transform_fn.()
-
-    put_in(model, [:tabs, tab], data)
+  defp update_tab_cursor(model, tab, update_fun) do
+    cursor = model[:tabs][tab][:cursor]
+    new_cursor = update_fun.(cursor)
+    put_in(model, [:tabs, tab, :cursor], new_cursor)
   end
 end

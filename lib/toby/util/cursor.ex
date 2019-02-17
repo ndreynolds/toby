@@ -12,7 +12,7 @@ defmodule Toby.Util.Cursor do
   end
 
   def previous(%{position: 0} = cursor) do
-    %{cursor | position: cursor.size}
+    %{cursor | position: cursor.size - 1}
   end
 
   def previous(cursor) do

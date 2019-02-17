@@ -11,7 +11,10 @@ defmodule Toby.App.Views.Applications do
     background: color(:white)
   ]
 
-  def render(%{applications: apps, cursor: cursor, selected: selected}) do
+  def render(%{
+        data: %{applications: apps, selected_application: selected},
+        cursor: cursor
+      }) do
     row do
       column(size: 6) do
         panel(title: "Applications") do

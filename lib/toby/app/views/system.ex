@@ -7,11 +7,13 @@ defmodule Toby.App.Views.System do
   import Toby.Util.Formatting
 
   def render(%{
-        cpu: cpu,
-        limits: limits,
-        memory: memory,
-        statistics: statistics,
-        system: system
+        data: %{
+          cpu: cpu,
+          limits: limits,
+          memory: memory,
+          statistics: statistics,
+          system: system
+        }
       }) do
     row do
       column(size: 12) do

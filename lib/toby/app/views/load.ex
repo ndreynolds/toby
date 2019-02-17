@@ -14,15 +14,18 @@ defmodule Toby.App.Views.Load do
   ]
 
   def render(%{
-        utilization: utilization,
-        scheduler_count: scheduler_count,
-        memory: memory,
-        io: io,
-        cursor: cursor
-      }) do
+        data: %{
+          utilization: utilization,
+          scheduler_count: scheduler_count,
+          memory: memory,
+          io: io
+        },
+        cursor: %{position: position}
+      })
+      when position <= 8 do
     util_opts = build_utilization_opts(scheduler_count)
-    visible_util_opts = Selection.slice(util_opts, 6, cursor.position)
-    util_series = selected_utilization_series(utilization, util_opts, cursor.position)
+    visible_util_opts = Selection.slice(util_opts, 6, position)
+    util_series = selected_utilization_series(utilization, util_opts, position)
 
     row do
       column size: 12 do
@@ -36,7 +39,7 @@ defmodule Toby.App.Views.Load do
               panel title: "Selection", height: 10 do
                 table do
                   for {{label, _key}, idx} <- visible_util_opts do
-                    table_row(if(idx == cursor.position, do: @style_selected, else: [])) do
+                    table_row(if(idx == position, do: @style_selected, else: [])) do
                       table_cell(content: label)
                     end
                   end

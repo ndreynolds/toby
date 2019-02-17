@@ -6,6 +6,12 @@ defmodule Toby.App.Views.MenuBar do
   import Ratatouille.View
   import Ratatouille.Constants, only: [color: 1]
 
+  def render(:not_loaded) do
+    bar do
+      label(content: "Loading...")
+    end
+  end
+
   def render(node) do
     bar do
       label do
