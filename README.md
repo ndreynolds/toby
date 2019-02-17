@@ -50,6 +50,33 @@ You can also move this executable somewhere else (e.g., to a directory in your
 $PATH). A current caveat is that it must be able to unpack itself, as Distillery
 executables are self-extracting archives.
 
+## Termbox NIFs & Comparison to Other Approaches
+
+### How does this compare to other tools like observer_cli and etop?
+
+These are nice tools written in pure Erlang, but I was looking for a user
+experience closer to htop or terminal vim/emacs. Pure-Erlang tools cannot access
+raw terminal events; they can only get line-buffered input (i.e., some
+characters and then a return).
+
+Because toby uses the termbox library (an alternative to ncurses) under the
+hood, it can support interactions like scrolling with the keyboard or mouse,
+clicking, or pressing a single key to perform an action. It also doesn't flicker
+on updates, and it can respond to window resizes by automatically performing a
+relayout of the content. These things unfortunately aren't possible in pure
+Erlang, as it requires putting the terminal into "raw" mode. Toby relies on NIFs
+from ex_termbox in order to do this.
+
+### Isn't it dangerous to use NIFs?
+
+Yes, it certainly is, but the idea isn't to run this in the same VM as your
+production code.
+
+Rather, it's to run toby as a separate, hidden node and simply connect it to
+your node or cluster via Erlang distribution protocol. This is similar to how a
+C node works. By running toby in a separate VM, even if one of the NIFs causes a
+segfault in the observer node, it should not affect the node(s) being observed.
+
 ## Roadmap
 
 * [ ] Implement views from observer on a basic level:
