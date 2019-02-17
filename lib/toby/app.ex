@@ -49,6 +49,8 @@ defmodule Toby.App do
   def init(%{window: window}) do
     model = %{
       selected_tab: :system,
+      selected_node: Node.self(),
+      overlay: nil,
       tabs: %{
         system: %{data: :not_loaded},
         load: %{data: :not_loaded, cursor: @init_cursor},
@@ -57,19 +59,18 @@ defmodule Toby.App do
         processes: %{data: :not_loaded, cursor: @init_cursor},
         ports: %{data: :not_loaded, cursor: @init_cursor}
       },
-      node: :not_loaded,
+      node: %{data: :not_loaded, cursor: @init_cursor},
       search: %{
         focused: false,
         query: ""
       },
-      overlay: nil,
       window: window
     }
 
     {model,
      Command.batch([
-       Update.request_tab_refresh(model),
-       Update.request_node_refresh()
+       Update.request_refresh(model, model.selected_tab),
+       Update.request_refresh(model, :node)
      ])}
   end
 
@@ -84,11 +85,6 @@ defmodule Toby.App do
       {%{search: %{focused: true}}, {:event, event}} ->
         Update.search(model, event)
 
-      ## Change the selected tab:
-
-      {_, {:event, %{ch: ch}}} when ch in @tab_keys ->
-        Update.select_tab(model, @tab_keymap[ch])
-
       ## Show or act on an overlay:
 
       {_, {:event, %{ch: ch}}} when ch in [?n, ?N] ->
@@ -97,13 +93,18 @@ defmodule Toby.App do
       {%{overlay: overlay}, {:event, event}} when not is_nil(overlay) ->
         Update.overlay_action(model, event)
 
+      ## Change the selected tab:
+
+      {_, {:event, %{ch: ch}}} when ch in @tab_keys ->
+        Update.select_tab(model, @tab_keymap[ch])
+
       ## Move the active cursor:
 
       {_, {:event, %{ch: ch, key: key}}} when ch == ?j or key == @arrow_down ->
-        Update.move_cursor(model, :next)
+        Update.move_cursor(model, [:tabs, model.selected_tab, :cursor], :next)
 
       {_, {:event, %{ch: ch, key: key}}} when ch == ?k or key == @arrow_up ->
-        Update.move_cursor(model, :prev)
+        Update.move_cursor(model, [:tabs, model.selected_tab, :cursor], :prev)
 
       ## Update the window in response to resize:
 
@@ -113,13 +114,14 @@ defmodule Toby.App do
       ## Handle tick:
 
       {_, :tick} ->
-        {model, Update.request_tab_refresh(model)}
+        {model,
+         Command.batch([
+           Update.request_refresh(model, model.selected_tab),
+           Update.request_refresh(model, :node)
+         ])}
 
-      {_, {{:refreshed, :node}, data}} ->
-        %{model | node: data}
-
-      {_, {{:refreshed, tab}, data}} ->
-        Update.refresh_tab(model, tab, data)
+      {_, {{:refreshed, key}, data}} ->
+        Update.refresh(model, key, data)
 
       ## Unhandled events (no update):
 
@@ -134,10 +136,10 @@ defmodule Toby.App do
   end
 
   @impl true
-  def render(%{selected_tab: selected_tab, search: search, node: node} = model) do
-    menu_bar = MenuBar.render(node)
-    status_bar = StatusBar.render(selected_tab, search)
-    tab_loaded? = model.tabs[selected_tab].data != :not_loaded
+  def render(model) do
+    menu_bar = MenuBar.render(model.selected_node)
+    status_bar = StatusBar.render(model.selected_tab, model.search)
+    tab_loaded? = model.tabs[model.selected_tab].data != :not_loaded
 
     view(top_bar: menu_bar, bottom_bar: status_bar) do
       if tab_loaded? do

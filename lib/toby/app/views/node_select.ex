@@ -6,18 +6,21 @@ defmodule Toby.App.Views.NodeSelect do
   """
 
   import Ratatouille.View
+  import Ratatouille.Constants, only: [color: 1]
 
-  def render(:not_loaded) do
-    panel(title: "Node Selection (<ESC> to close)", height: :fill) do
-      label(content: "Loading...")
-    end
-  end
+  @style_selected [
+    color: color(:black),
+    background: color(:white)
+  ]
 
   def render(%{
-        current: current,
-        cookie: cookie,
-        connected_nodes: connected,
-        visible_nodes: visible
+        data: %{
+          current: current,
+          cookie: cookie,
+          connected_nodes: connected,
+          visible_nodes: visible
+        },
+        cursor: cursor
       }) do
     panel(title: "Node Selection (<ESC> to close)", height: :fill) do
       panel(title: "Current") do
@@ -36,10 +39,10 @@ defmodule Toby.App.Views.NodeSelect do
 
       row do
         column(size: 6) do
-          panel(title: "Connected Nodes") do
+          panel(title: "Select another node") do
             table do
-              for node <- connected do
-                table_row do
+              for {node, idx} <- Enum.with_index(connected) do
+                table_row(if cursor.position == idx, do: @style_selected, else: []) do
                   table_cell(content: to_string(node))
                 end
               end
@@ -60,6 +63,12 @@ defmodule Toby.App.Views.NodeSelect do
           end
         end
       end
+    end
+  end
+
+  def render(_) do
+    panel(title: "Node Selection (<ESC> to close)", height: :fill) do
+      label(content: "Loading...")
     end
   end
 end

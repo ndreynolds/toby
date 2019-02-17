@@ -3,12 +3,14 @@ defmodule Toby.Data.Sampler do
   Collects samples of the current VM state for later use in charts.
   """
 
-  def sample do
+  alias Toby.Data.Node
+
+  def sample(node) do
     %{
-      sampled_at: :erlang.monotonic_time(),
-      scheduler_utilization: :scheduler.sample(),
-      memory: :erlang.memory(),
-      io: :erlang.statistics(:io)
+      sampled_at: Node.monotonic_time(node),
+      scheduler_utilization: Node.sample_schedulers(node),
+      memory: Node.memory(node),
+      io: Node.statistics(node, :io)
     }
   end
 end

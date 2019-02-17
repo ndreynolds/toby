@@ -3,16 +3,18 @@ defmodule Toby.Data.Applications do
   Utilities for gathering application data such as the process tree.
   """
 
-  def applications do
-    {:ok, applications_in_tree()}
+  alias Toby.Data.Node
+
+  def applications(node) do
+    {:ok, applications_in_tree(node)}
   end
 
-  def application(app) do
-    with {:ok, data} <- :application.get_all_key(app) do
+  def application(node, app) do
+    with {:ok, data} <- Node.application(node, app) do
       app_data =
         data
         |> Enum.into(%{})
-        |> Map.merge(%{name: app, process_tree: application_process_tree(app)})
+        |> Map.merge(%{name: app, process_tree: application_process_tree(node, app)})
 
       {:ok, app_data}
     else
@@ -20,53 +22,53 @@ defmodule Toby.Data.Applications do
     end
   end
 
-  def application_process_tree(app) do
-    case application_master(app) do
+  defp application_process_tree(node, app) do
+    case application_master(node, app) do
       nil -> nil
-      pid -> process_tree(pid, [application_controller()])
+      pid -> process_tree(node, pid, [application_controller(node)])
     end
   end
 
-  defp process_tree(port, _parents) when is_port(port) do
+  defp process_tree(_node, port, _parents) when is_port(port) do
     {port, []}
   end
 
-  defp process_tree(pid, parents) when is_pid(pid) do
-    {:links, links} = process_info(pid, :links)
+  defp process_tree(node, pid, parents) when is_pid(pid) do
+    {:links, links} = Node.process_info(node, pid, :links)
 
     child_pids = links -- parents
-    children = for child <- child_pids, do: process_tree(child, [pid | parents])
+    children = for child <- child_pids, do: process_tree(node, child, [pid | parents])
 
-    case process_info(pid, :registered_name) do
+    case Node.process_info(node, pid, :registered_name) do
       {:registered_name, name} -> {name, children}
       _ -> {pid, children}
     end
   end
 
-  defp application_controller, do: :erlang.whereis(:application_controller)
+  defp application_controller(node) do
+    Node.where_is(node, :application_controller)
+  end
 
-  defp application_master(app) do
-    Enum.find(application_masters(), fn pid ->
-      case :application.get_application(pid) do
+  defp application_master(node, app) do
+    Enum.find(application_masters(node), fn pid ->
+      case Node.application_by_pid(node, pid) do
         {:ok, ^app} -> true
         _ -> false
       end
     end)
   end
 
-  defp applications_in_tree do
-    Enum.flat_map(application_masters(), fn pid ->
-      case :application.get_application(pid) do
+  defp application_masters(node) do
+    {:links, masters} = Node.process_info(node, application_controller(node), :links)
+    masters
+  end
+
+  defp applications_in_tree(node) do
+    Enum.flat_map(application_masters(node), fn pid ->
+      case Node.application_by_pid(node, pid) do
         {:ok, app} -> [app]
         _ -> []
       end
     end)
   end
-
-  defp application_masters do
-    {:links, masters} = process_info(application_controller(), :links)
-    masters
-  end
-
-  defp process_info(pid, key), do: :erlang.process_info(pid, key)
 end

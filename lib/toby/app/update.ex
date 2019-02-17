@@ -12,6 +12,7 @@ defmodule Toby.App.Update do
 
   @escape key(:esc)
   @backspace key(:backspace2)
+  @enter key(:enter)
 
   def focus_search(model) do
     put_in(model, [:search, :focused], true)
@@ -41,6 +42,28 @@ defmodule Toby.App.Update do
     %{model | overlay: :node_selection}
   end
 
+  def overlay_action(%{overlay: :node_selection} = model, %{key: @enter}) do
+    %{cursor: cursor, data: %{connected_nodes: nodes}} = model.node
+
+    node = Enum.at(nodes, cursor.position)
+    new_model = %{model | selected_node: node}
+
+    {new_model,
+     Command.batch([
+       request_refresh(new_model, :node),
+       request_refresh(new_model, model.selected_tab),
+       Command.new(fn -> Data.set_sample_source(node) end, :set_sample_source)
+     ])}
+  end
+
+  def overlay_action(%{overlay: :node_selection} = model, %{ch: ch}) when ch == ?j do
+    move_cursor(model, [:node, :cursor], :next)
+  end
+
+  def overlay_action(%{overlay: :node_selection} = model, %{ch: ch}) when ch == ?k do
+    move_cursor(model, [:node, :cursor], :prev)
+  end
+
   def overlay_action(model, %{key: @escape}) do
     %{model | overlay: nil}
   end
@@ -49,36 +72,30 @@ defmodule Toby.App.Update do
     model
   end
 
-  def move_cursor(model, direction) do
-    new_model =
-      update_in(model, [:tabs, model.selected_tab, :cursor], &new_cursor(&1, direction))
-
-    {new_model, request_tab_refresh(new_model)}
+  def move_cursor(model, cursor_path, direction) do
+    new_model = update_in(model, cursor_path, &new_cursor(&1, direction))
+    {new_model, request_refresh(new_model, new_model.selected_tab)}
   end
 
   defp new_cursor(nil, _direction), do: nil
   defp new_cursor(cursor, :prev), do: Cursor.previous(cursor)
   defp new_cursor(cursor, :next), do: Cursor.next(cursor)
 
-  def select_tab(model, id) do
-    new_model = %{model | selected_tab: id}
-    {new_model, request_tab_refresh(new_model)}
+  def select_tab(model, tab_id) do
+    new_model = %{model | selected_tab: tab_id}
+    {new_model, request_refresh(new_model, tab_id)}
   end
 
-  def request_node_refresh do
-    Command.new(fn -> Data.fetch!(:node) end, {:refreshed, :node})
-  end
-
-  def request_tab_refresh(%{selected_tab: :applications} = model) do
+  def request_refresh(model, :applications) do
     Command.new(
       fn ->
-        data = Data.fetch!(:applications)
+        data = Data.fetch!({model.selected_node, :applications})
 
         cursor =
           Cursor.put_size(model.tabs.applications.cursor, length(data.applications))
 
         selected = Enum.at(data.applications, cursor.position)
-        selected_data = Data.fetch!({:application, selected})
+        selected_data = Data.fetch!({model.selected_node, :application, selected})
 
         %{
           applications: data.applications,
@@ -89,45 +106,54 @@ defmodule Toby.App.Update do
     )
   end
 
-  def request_tab_refresh(%{selected_tab: tab}) do
+  def request_refresh(model, key) do
     Command.new(
-      fn -> Data.fetch!(tab) end,
-      {:refreshed, tab}
+      fn -> Data.fetch!({model.selected_node, key}) end,
+      {:refreshed, key}
     )
   end
 
-  def refresh_tab(model, tab, data) do
+  def refresh(model, :node, data) do
     model
-    |> put_in([:tabs, tab, :data], data)
-    |> after_tab_refresh(tab, data)
+    |> update_in([:node, :cursor], &Cursor.put_size(&1, length(data.connected_nodes)))
+    |> put_in([:node, :data], data)
   end
 
-  defp after_tab_refresh(model, :processes, data) do
+  def refresh(model, :processes, data) do
     filtered_processes = filter(:processes, data.processes, model.search.query)
 
     model
-    |> update_tab_cursor(:processes, &Cursor.put_size(&1, length(data.processes)))
+    |> put_in([:tabs, :processes, :data], data)
+    |> update_in(
+      [:tabs, :processes, :cursor],
+      &Cursor.put_size(&1, length(data.processes))
+    )
     |> put_in([:tabs, :processes, :filtered], filtered_processes)
   end
 
-  defp after_tab_refresh(model, :ports, data) do
-    update_tab_cursor(model, :ports, &Cursor.put_size(&1, length(data.ports)))
+  def refresh(model, :ports, data) do
+    model
+    |> put_in([:tabs, :ports, :data], data)
+    |> update_in([:tabs, :ports, :cursor], &Cursor.put_size(&1, length(data.ports)))
   end
 
-  defp after_tab_refresh(model, :load, data) do
-    update_tab_cursor(model, :load, &Cursor.put_size(&1, data.scheduler_count + 1))
+  def refresh(model, :load, data) do
+    model
+    |> put_in([:tabs, :load, :data], data)
+    |> update_in([:tabs, :load, :cursor], &Cursor.put_size(&1, data.scheduler_count + 1))
   end
 
-  defp after_tab_refresh(model, :applications, data) do
-    update_tab_cursor(
-      model,
-      :applications,
+  def refresh(model, :applications, data) do
+    model
+    |> put_in([:tabs, :applications, :data], data)
+    |> update_in(
+      [:tabs, :applications, :cursor],
       &Cursor.put_size(&1, length(data.applications))
     )
   end
 
-  defp after_tab_refresh(model, _tab, _data) do
-    model
+  def refresh(model, tab, data) do
+    put_in(model, [:tabs, tab, :data], data)
   end
 
   defp filter(:processes, processes, ""), do: processes
@@ -138,11 +164,5 @@ defmodule Toby.App.Update do
       String.contains?(to_string(p[:registered_name]), query) ||
         String.contains?(inspect(p.current_function), query)
     end)
-  end
-
-  defp update_tab_cursor(model, tab, update_fun) do
-    cursor = model[:tabs][tab][:cursor]
-    new_cursor = update_fun.(cursor)
-    put_in(model, [:tabs, tab, :cursor], new_cursor)
   end
 end

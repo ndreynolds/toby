@@ -78,4 +78,8 @@ defmodule Toby.Util.Formatting do
   def format_func({mod, name, arity}) do
     "#{mod}:#{name}/#{arity}"
   end
+
+  def format_func(_) do
+    "(No function)"
+  end
 end

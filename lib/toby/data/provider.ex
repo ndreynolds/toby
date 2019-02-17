@@ -7,34 +7,28 @@ defmodule Toby.Data.Provider do
   throttled interface to this data to avoid overwhelming the system.
   """
 
-  alias Toby.Data.{Applications, Nodes}
+  alias Toby.Data.{Applications, Node}
 
-  def provide(:node, _) do
+  def provide({node, :node}, _) do
     {:ok,
      %{
-       current: Node.self(),
-       cookie: Node.get_cookie(),
-       connected_nodes: Nodes.connected(),
-       visible_nodes: Nodes.visible()
+       current: node,
+       cookie: Node.cookie(node),
+       connected_nodes: Node.connected_nodes(),
+       visible_nodes: Node.visible_nodes()
      }}
   end
 
-  def provide(:processes, _) do
-    {:ok,
-     %{
-       processes: for(pid <- Process.list(), do: extended_process_info(pid))
-     }}
+  def provide({node, :processes}, _) do
+    {:ok, %{processes: Node.processes_extended(node)}}
   end
 
-  def provide(:ports, _) do
-    {:ok,
-     %{
-       ports: for(port <- Port.list(), do: extended_port_info(port))
-     }}
+  def provide({node, :ports}, _) do
+    {:ok, %{ports: Node.ports_extended(node)}}
   end
 
-  def provide(:applications, _) do
-    with {:ok, apps} <- Applications.applications() do
+  def provide({node, :applications}, _) do
+    with {:ok, apps} <- Applications.applications(node) do
       {:ok,
        %{
          applications: Enum.sort_by(apps, &to_string/1)
@@ -42,33 +36,33 @@ defmodule Toby.Data.Provider do
     end
   end
 
-  def provide(:system, _) do
+  def provide({node, :system}, _) do
     {:ok,
      %{
-       cpu: system_cpu(),
-       limits: system_limits(),
-       memory: system_memory(),
-       statistics: system_statistics(),
-       system: system_data()
+       cpu: system_cpu(node),
+       limits: system_limits(node),
+       memory: system_memory(node),
+       statistics: system_statistics(node),
+       system: system_data(node)
      }}
   end
 
-  def provide(:load, samples) do
+  def provide({node, :load}, samples) do
     {:ok,
      %{
        utilization: historical_scheduler_utilization(samples),
-       scheduler_count: system_cpu().schedulers,
+       scheduler_count: system_cpu(node).schedulers,
        memory: historical_memory(samples),
        io: historical_io(samples)
      }}
   end
 
-  def provide(:memory, _) do
+  def provide({_node, :memory}, _) do
     {:ok, %{}}
   end
 
-  def provide({:application, app}, _) do
-    Applications.application(app)
+  def provide({node, :application, app}, _) do
+    Applications.application(node, app)
   end
 
   def provide(_other_key, _) do
@@ -112,88 +106,53 @@ defmodule Toby.Data.Provider do
     Enum.reverse(util_by_second)
   end
 
-  def system_data do
+  def system_data(node) do
     %{
-      otp_release: system_info(:otp_release),
-      erts_version: system_info(:version),
-      compiled_for: system_info(:system_architecture),
-      emulator_wordsize: system_info({:wordsize, :internal}),
-      process_wordsize: system_info({:wordsize, :external}),
-      smp_support?: system_info(:smp_support),
-      thread_support?: system_info(:threads),
-      async_thread_pool_size: system_info(:thread_pool_size)
+      otp_release: Node.system_info(node, :otp_release),
+      erts_version: Node.system_info(node, :version),
+      compiled_for: Node.system_info(node, :system_architecture),
+      emulator_wordsize: Node.system_info(node, {:wordsize, :internal}),
+      process_wordsize: Node.system_info(node, {:wordsize, :external}),
+      smp_support?: Node.system_info(node, :smp_support),
+      thread_support?: Node.system_info(node, :threads),
+      async_thread_pool_size: Node.system_info(node, :thread_pool_size)
     }
   end
 
-  def system_cpu do
+  def system_cpu(node) do
     %{
-      logical_cpus: system_info(:logical_processors),
-      online_logical_cpus: system_info(:logical_processors),
-      available_logical_cpus: system_info(:logical_processors),
-      schedulers: system_info(:schedulers),
-      online_schedulers: system_info(:schedulers_online),
-      available_schedulers: system_info(:schedulers_online)
+      logical_cpus: Node.system_info(node, :logical_processors),
+      online_logical_cpus: Node.system_info(node, :logical_processors),
+      available_logical_cpus: Node.system_info(node, :logical_processors),
+      schedulers: Node.system_info(node, :schedulers),
+      online_schedulers: Node.system_info(node, :schedulers_online),
+      available_schedulers: Node.system_info(node, :schedulers_online)
     }
   end
 
-  def system_limits do
+  def system_limits(node) do
     %{
-      atoms: limit(system_info(:atom_count), system_info(:atom_limit)),
-      procs: limit(system_info(:process_count), system_info(:process_limit)),
-      ports: limit(system_info(:port_count), system_info(:port_limit)),
-      ets: limit(system_info(:ets_count), system_info(:ets_limit)),
-      dist_buffer_busy: system_info(:dist_buf_busy_limit)
+      atoms: limit(Node.system_info(node, :atom_count), Node.system_info(node, :atom_limit)),
+      procs: limit(Node.system_info(node, :process_count), Node.system_info(node, :process_limit)),
+      ports: limit(Node.system_info(node, :port_count), Node.system_info(node, :port_limit)),
+      ets: limit(Node.system_info(node, :ets_count), Node.system_info(node, :ets_limit)),
+      dist_buffer_busy: Node.system_info(node, :dist_buf_busy_limit)
     }
   end
 
-  def system_statistics do
-    {{:input, io_input}, {:output, io_output}} = :erlang.statistics(:io)
+  def system_statistics(node) do
+    {{:input, io_input}, {:output, io_output}} = Node.statistics(node, :io)
 
     %{
-      uptime_ms: uptime_ms(),
-      run_queue: :erlang.statistics(:total_run_queue_lengths),
+      uptime_ms: uptime_ms(node),
+      run_queue: Node.statistics(node, :total_run_queue_lengths),
       io_input_bytes: io_input,
       io_output_bytes: io_output
     }
   end
 
-  def system_memory do
-    Enum.into(:erlang.memory(), %{})
-  end
-
-  def extended_process_info(pid) do
-    {:memory, memory} = Process.info(pid, :memory)
-    {:monitors, monitors} = Process.info(pid, :monitors)
-    {:monitored_by, monitored_by} = Process.info(pid, :monitored_by)
-
-    pid
-    |> Process.info()
-    |> Enum.into(%{
-      pid: pid,
-      memory: memory,
-      monitors: monitors,
-      monitored_by: monitored_by
-    })
-  end
-
-  def extended_port_info(port) do
-    case Port.info(port) do
-      :undefined ->
-        %{}
-
-      info ->
-        {:monitors, monitors} = Port.info(port, :monitors)
-        {:monitored_by, monitored_by} = Port.info(port, :monitored_by)
-
-        info
-        |> Enum.into(%{})
-        |> Map.merge(%{
-          id: port,
-          slot: info[:id],
-          monitors: monitors,
-          monitored_by: monitored_by
-        })
-    end
+  def system_memory(node) do
+    Enum.into(Node.memory(node), %{})
   end
 
   defp limit(count, limit) do
@@ -203,10 +162,8 @@ defmodule Toby.Data.Provider do
   defp percent(_, 0), do: 0
   defp percent(x, y), do: :erlang.trunc(Float.round(x / y, 2) * 100)
 
-  defp uptime_ms do
-    {total_ms, _since_last_call_ms} = :erlang.statistics(:wall_clock)
+  defp uptime_ms(node) do
+    {total_ms, _since_last_call_ms} = Node.statistics(node, :wall_clock)
     total_ms
   end
-
-  defp system_info(key), do: :erlang.system_info(key)
 end

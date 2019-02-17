@@ -51,10 +51,10 @@ defmodule Toby.App.Views.Processes do
               table_row(if(proc == selected, do: @style_selected, else: [])) do
                 table_cell(content: inspect(proc.pid))
                 table_cell(content: name_or_initial_func(proc))
-                table_cell(content: to_string(proc.reductions))
-                table_cell(content: inspect(proc.memory))
-                table_cell(content: to_string(proc.message_queue_len))
-                table_cell(content: format_func(proc.current_function))
+                table_cell(content: to_string(proc[:reductions]))
+                table_cell(content: inspect(proc[:memory]))
+                table_cell(content: to_string(proc[:message_queue_len]))
+                table_cell(content: format_func(proc[:current_function]))
               end
             end
           end
@@ -74,12 +74,12 @@ defmodule Toby.App.Views.Processes do
       table do
         table_row do
           table_cell(content: "Initial Call")
-          table_cell(content: format_func(process.initial_call))
+          table_cell(content: format_func(process[:initial_call]))
         end
 
         table_row do
           table_cell(content: "Current Function")
-          table_cell(content: format_func(process.current_function))
+          table_cell(content: format_func(process[:current_function]))
         end
 
         table_row do
@@ -139,10 +139,15 @@ defmodule Toby.App.Views.Processes do
   end
 
   defp name_or_initial_func(process) do
-    process
-    |> Map.get_lazy(:registered_name, fn ->
-      format_func(process.initial_call)
-    end)
-    |> to_string()
+    case process do
+      %{registered_name: name} when not is_nil(name) ->
+        to_string(name)
+
+      %{initial_call: call} when not is_nil(call) ->
+        format_func(call)
+
+      %{pid: pid} ->
+        inspect(pid)
+    end
   end
 end

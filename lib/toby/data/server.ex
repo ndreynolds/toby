@@ -23,10 +23,14 @@ defmodule Toby.Data.Server do
     value
   end
 
+  def set_sample_source(pid \\ __MODULE__, node) do
+    GenServer.call(pid, {:set_sample_source, node})
+  end
+
   @impl true
   def init(:ok) do
     Process.send_after(self(), :sample, 100)
-    {:ok, %{cache: %{}, samples: []}}
+    {:ok, %{cache: %{}, sample_source: Node.self(), samples: []}}
   end
 
   @impl true
@@ -40,11 +44,15 @@ defmodule Toby.Data.Server do
     end
   end
 
+  def handle_call({:set_sample_source, node}, _from, state) do
+    {:reply, :ok, %{state | sample_source: node, samples: []}}
+  end
+
   @impl true
   def handle_info(:sample, state) do
     Process.send_after(self(), :sample, 1000)
 
-    new_samples = [Sampler.sample() | Enum.take(state.samples, 59)]
+    new_samples = [Sampler.sample(state.sample_source) | Enum.take(state.samples, 59)]
 
     {:noreply, %{state | samples: new_samples}}
   end
