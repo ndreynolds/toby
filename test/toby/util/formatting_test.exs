@@ -1,7 +1,7 @@
-defmodule Toby.FormattingTest do
+defmodule Toby.Util.FormattingTest do
   use ExUnit.Case, async: true
 
-  import Toby.Formatting
+  import Toby.Util.Formatting
 
   describe "format_ms/1" do
     test "formats milliseconds as a human-readable string" do
