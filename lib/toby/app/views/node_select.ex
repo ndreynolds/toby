@@ -17,8 +17,7 @@ defmodule Toby.App.Views.NodeSelect do
         data: %{
           current: current,
           cookie: cookie,
-          connected_nodes: connected,
-          visible_nodes: visible
+          connected_nodes: connected
         },
         cursor: cursor
       }) do
@@ -37,28 +36,11 @@ defmodule Toby.App.Views.NodeSelect do
         end
       end
 
-      row do
-        column(size: 6) do
-          panel(title: "Select another node") do
-            table do
-              for {node, idx} <- Enum.with_index(connected) do
-                table_row(if cursor.position == idx, do: @style_selected, else: []) do
-                  table_cell(content: to_string(node))
-                end
-              end
-            end
-          end
-        end
-
-        column(size: 6) do
-          panel(title: "Visible Nodes") do
-            table do
-              for {node, port} <- visible do
-                table_row do
-                  table_cell(content: to_string(node))
-                  table_cell(content: to_string(port))
-                end
-              end
+      panel(title: "Select a node... (<ENTER> to select)") do
+        table do
+          for {node, idx} <- Enum.with_index(connected) do
+            table_row(if cursor.position == idx, do: @style_selected, else: []) do
+              table_cell(content: to_string(node))
             end
           end
         end

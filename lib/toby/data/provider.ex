@@ -132,9 +132,15 @@ defmodule Toby.Data.Provider do
 
   def system_limits(node) do
     %{
-      atoms: limit(Node.system_info(node, :atom_count), Node.system_info(node, :atom_limit)),
-      procs: limit(Node.system_info(node, :process_count), Node.system_info(node, :process_limit)),
-      ports: limit(Node.system_info(node, :port_count), Node.system_info(node, :port_limit)),
+      atoms:
+        limit(Node.system_info(node, :atom_count), Node.system_info(node, :atom_limit)),
+      procs:
+        limit(
+          Node.system_info(node, :process_count),
+          Node.system_info(node, :process_limit)
+        ),
+      ports:
+        limit(Node.system_info(node, :port_count), Node.system_info(node, :port_limit)),
       ets: limit(Node.system_info(node, :ets_count), Node.system_info(node, :ets_limit)),
       dist_buffer_busy: Node.system_info(node, :dist_buf_busy_limit)
     }
