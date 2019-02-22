@@ -23,7 +23,7 @@ defmodule Toby.Mixfile do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:ratatouille, git: "https://github.com/ndreynolds/ratatouille"},
+      {:ratatouille, "~> 0.4"},
       {:credo, "~> 1.0", runtime: false},
       {:distillery, "~> 2.0"}
     ]
