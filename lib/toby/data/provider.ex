@@ -57,8 +57,11 @@ defmodule Toby.Data.Provider do
      }}
   end
 
-  def provide({_node, :memory}, _) do
-    {:ok, %{}}
+  def provide({node, :memory}, _) do
+    {:ok,
+     %{
+       allocators: Node.allocators(node)
+     }}
   end
 
   def provide({node, :application, app}, _) do

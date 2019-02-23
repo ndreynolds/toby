@@ -124,6 +124,53 @@ defmodule Toby.Data.Node do
     call(node, :application, :get_application, [pid])
   end
 
+  # Allocators
+
+  def allocators(node) do
+    allocs =
+      for alloc <- erts_allocator_names(node), into: %{} do
+        {alloc, allocator(node, alloc)}
+      end
+
+    total =
+      for {_, alloc} <- allocs, reduce: %{block_size: 0, carrier_size: 0} do
+        acc ->
+          %{
+            block_size: acc.block_size + alloc.block_size,
+            carrier_size: acc.carrier_size + alloc.carrier_size
+          }
+      end
+
+    Map.merge(allocs, %{total: total})
+  end
+
+  def allocator(node, alloc) do
+    data = call(node, :erlang, :alloc_sizes, [alloc])
+
+    for {:instance, _, values} <- data, reduce: %{block_size: 0, carrier_size: 0} do
+      acc ->
+        with [
+               {:blocks_size, mbcs_block_size, _, _},
+               {:carriers_size, mbcs_carrier_size, _, _}
+             ] <- values[:mbcs],
+             [
+               {:blocks_size, sbcs_block_size, _, _},
+               {:carriers_size, sbcs_carrier_size, _, _}
+             ] <- values[:sbcs] do
+          %{
+            block_size: acc.block_size + mbcs_block_size + sbcs_block_size,
+            carrier_size: acc.carrier_size + mbcs_carrier_size + sbcs_carrier_size
+          }
+        else
+          _ -> acc
+        end
+    end
+  end
+
+  defp erts_allocator_names(node) do
+    call(node, :erlang, :system_info, [:alloc_util_allocators])
+  end
+
   # Nodes
 
   def visible_nodes do
