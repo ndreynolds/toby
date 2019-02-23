@@ -18,7 +18,8 @@ defmodule Toby.App do
     Ports,
     Processes,
     StatusBar,
-    System
+    System,
+    Tables
   }
 
   import Ratatouille.View
@@ -39,7 +40,9 @@ defmodule Toby.App do
     ?p => :processes,
     ?P => :processes,
     ?r => :ports,
-    ?R => :ports
+    ?R => :ports,
+    ?t => :tables,
+    ?T => :tables
   }
   @tab_keys Map.keys(@tab_keymap)
 
@@ -57,7 +60,8 @@ defmodule Toby.App do
         memory: %{data: :not_loaded},
         applications: %{data: :not_loaded, cursor: @init_cursor},
         processes: %{data: :not_loaded, cursor: @init_cursor},
-        ports: %{data: :not_loaded, cursor: @init_cursor}
+        ports: %{data: :not_loaded, cursor: @init_cursor},
+        tables: %{data: :not_loaded, cursor: @init_cursor}
       },
       node: %{data: :not_loaded, cursor: @init_cursor},
       search: %{
@@ -171,6 +175,9 @@ defmodule Toby.App do
 
       :ports ->
         Ports.render(model.tabs.ports, model.window)
+
+      :tables ->
+        Tables.render(model.tabs.tables, model.window)
     end
   end
 

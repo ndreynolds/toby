@@ -65,6 +65,13 @@ defmodule Toby.Data.Provider do
      }}
   end
 
+  def provide({node, :tables}, _) do
+    {:ok,
+     %{
+       tables: node |> Node.ets_tables() |> Enum.sort_by(& &1[:name])
+     }}
+  end
+
   def provide({node, :application, app}, _) do
     Applications.application(node, app)
   end

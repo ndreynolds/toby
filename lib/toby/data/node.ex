@@ -1,6 +1,6 @@
 defmodule Toby.Data.Node do
   @moduledoc """
-  Retrieves system information for a particular connected node
+  Retrieves system information for a particular connected node via RPC call.
   """
 
   # General
@@ -114,6 +114,39 @@ defmodule Toby.Data.Node do
     end
   end
 
+  # Tables
+
+  @doc """
+  Returns ETS tables for a given node.
+
+  Table memory is returned in bytes, converted from the number of words reported
+  by ETS.
+  """
+  def ets_tables(node) do
+    word_size = system_info(node, :wordsize)
+
+    with tables <- call(node, :ets, :all) do
+      for id <- tables do
+        data =
+          node
+          |> call(:ets, :info, [id])
+          |> Enum.into(%{})
+
+        owner_name =
+          case process_info(node, data.owner, :registered_name) do
+            {:registered_name, name} when is_atom(name) -> name
+            _ -> nil
+          end
+
+        Map.merge(data, %{
+          source: "ets",
+          memory: data.memory * word_size,
+          owner_name: owner_name
+        })
+      end
+    end
+  end
+
   # Applications
 
   def application(node, name) do
@@ -126,9 +159,14 @@ defmodule Toby.Data.Node do
 
   # Allocators
 
+  @doc """
+  Returns aggregated allocator data for the given node.
+  """
   def allocators(node) do
+    alloc_names = system_info(node, :alloc_util_allocators)
+
     allocs =
-      for alloc <- erts_allocator_names(node), into: %{} do
+      for alloc <- alloc_names, into: %{} do
         {alloc, allocator(node, alloc)}
       end
 
@@ -147,6 +185,9 @@ defmodule Toby.Data.Node do
     Map.merge(allocs, %{total: total})
   end
 
+  @doc """
+  Returns aggregated data for the allocator on the given node.
+  """
   def allocator(node, alloc) do
     data = call(node, :erlang, :alloc_sizes, [alloc])
 
@@ -171,10 +212,6 @@ defmodule Toby.Data.Node do
         end
       end
     )
-  end
-
-  defp erts_allocator_names(node) do
-    call(node, :erlang, :system_info, [:alloc_util_allocators])
   end
 
   # Nodes
