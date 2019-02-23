@@ -133,13 +133,16 @@ defmodule Toby.Data.Node do
       end
 
     total =
-      for {_, alloc} <- allocs, reduce: %{block_size: 0, carrier_size: 0} do
-        acc ->
+      Enum.reduce(
+        allocs,
+        %{block_size: 0, carrier_size: 0},
+        fn {_, alloc}, acc ->
           %{
             block_size: acc.block_size + alloc.block_size,
             carrier_size: acc.carrier_size + alloc.carrier_size
           }
-      end
+        end
+      )
 
     Map.merge(allocs, %{total: total})
   end
@@ -147,8 +150,10 @@ defmodule Toby.Data.Node do
   def allocator(node, alloc) do
     data = call(node, :erlang, :alloc_sizes, [alloc])
 
-    for {:instance, _, values} <- data, reduce: %{block_size: 0, carrier_size: 0} do
-      acc ->
+    Enum.reduce(
+      data,
+      %{block_size: 0, carrier_size: 0},
+      fn {:instance, _, values}, acc ->
         with [
                {:blocks_size, mbcs_block_size, _, _},
                {:carriers_size, mbcs_carrier_size, _, _}
@@ -164,7 +169,8 @@ defmodule Toby.Data.Node do
         else
           _ -> acc
         end
-    end
+      end
+    )
   end
 
   defp erts_allocator_names(node) do

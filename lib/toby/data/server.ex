@@ -6,7 +6,7 @@ defmodule Toby.Data.Server do
 
   use GenServer
 
-  alias Toby.Data.{Provider, Sampler}
+  alias Toby.Data.{Provider, Samples}
 
   @cache_ms 2000
 
@@ -52,7 +52,7 @@ defmodule Toby.Data.Server do
   def handle_info(:sample, state) do
     Process.send_after(self(), :sample, 1000)
 
-    new_samples = [Sampler.sample(state.sample_source) | Enum.take(state.samples, 59)]
+    new_samples = [Samples.collect(state.sample_source) | Enum.take(state.samples, 59)]
 
     {:noreply, %{state | samples: new_samples}}
   end

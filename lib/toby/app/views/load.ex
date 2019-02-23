@@ -32,7 +32,7 @@ defmodule Toby.App.Views.Load do
         panel title: "Scheduler Utilization (%)" do
           row do
             column size: 9 do
-              chart(type: :line, series: util_series, height: 10)
+              chart(type: :line, series: fill_series(util_series), height: 10)
             end
 
             column size: 3 do
@@ -51,14 +51,14 @@ defmodule Toby.App.Views.Load do
 
         row do
           column size: 6 do
-            panel title: "Memory Usage (MB)" do
-              chart(type: :line, series: memory, height: 10)
+            panel title: "Memory Usage (MB)", height: 15 do
+              chart(type: :line, series: fill_series(memory), height: 10)
             end
           end
 
           column size: 6 do
-            panel title: "IO Usage (B)" do
-              chart(type: :line, series: [0 | io], height: 10)
+            panel title: "IO Usage (B)", height: 15 do
+              chart(type: :line, series: fill_series(io), height: 10)
             end
           end
         end
@@ -77,4 +77,7 @@ defmodule Toby.App.Views.Load do
 
     Enum.with_index([{"Total", :total} | scheduler_opts])
   end
+
+  defp fill_series(series) when length(series) >= 60, do: series
+  defp fill_series(series), do: List.duplicate(0, 60 - length(series)) ++ series
 end

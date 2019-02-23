@@ -7,7 +7,7 @@ defmodule Toby.Data.Provider do
   throttled interface to this data to avoid overwhelming the system.
   """
 
-  alias Toby.Data.{Applications, Node}
+  alias Toby.Data.{Applications, Node, Samples}
 
   def provide({node, :node}, _) do
     {:ok,
@@ -50,17 +50,18 @@ defmodule Toby.Data.Provider do
   def provide({node, :load}, samples) do
     {:ok,
      %{
-       utilization: historical_scheduler_utilization(samples),
+       utilization: Samples.historical_scheduler_utilization(samples),
        scheduler_count: system_cpu(node).schedulers,
-       memory: historical_memory(samples),
-       io: historical_io(samples)
+       memory: Samples.historical_memory(samples),
+       io: Samples.historical_io(samples)
      }}
   end
 
-  def provide({node, :memory}, _) do
+  def provide({node, :memory}, samples) do
     {:ok,
      %{
-       allocators: Node.allocators(node)
+       allocators: Node.allocators(node),
+       allocation_history: Samples.historical_allocation(samples)
      }}
   end
 
@@ -70,43 +71,6 @@ defmodule Toby.Data.Provider do
 
   def provide(_other_key, _) do
     {:error, :invalid_key}
-  end
-
-  def historical_memory(samples) do
-    memory_samples = for %{memory: memory} <- samples, do: memory
-
-    totals_by_second =
-      for sample <- memory_samples do
-        sample[:total] / :math.pow(1024, 2)
-      end
-
-    Enum.reverse(totals_by_second)
-  end
-
-  def historical_io(samples) do
-    io_samples = for %{io: io} <- samples, do: io
-
-    totals_by_second =
-      for {{:input, input}, {:output, output}} <- io_samples do
-        (input + output) / 1
-      end
-
-    Enum.reverse(totals_by_second)
-  end
-
-  def historical_scheduler_utilization(samples) do
-    util_samples = for %{scheduler_utilization: util} <- samples, do: util
-
-    util_by_second =
-      for {sample, next_sample} <- Enum.zip(util_samples, Enum.drop(util_samples, 1)) do
-        [{:total, total, _} | rest] = :scheduler.utilization(sample, next_sample)
-
-        for {:normal, id, util, _} <- rest, into: %{total: total * 100} do
-          {id, util * 100}
-        end
-      end
-
-    Enum.reverse(util_by_second)
   end
 
   def system_data(node) do
