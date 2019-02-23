@@ -89,7 +89,11 @@ defmodule Toby.Data.Node do
   end
 
   def port_info_extended(node, port) do
-    with {:monitors, monitors} <- port_info(node, port, :monitors),
+    with {:memory, memory} <- port_info(node, port, :memory),
+         {:queue_size, queue_size} <- port_info(node, port, :queue_size),
+         {:parallelism, parallelism} <- port_info(node, port, :parallelism),
+         {:locking, locking} <- port_info(node, port, :locking),
+         {:monitors, monitors} <- port_info(node, port, :monitors),
          {:monitored_by, monitored_by} = port_info(node, port, :monitored_by),
          info <- port_info(node, port) do
       info
@@ -97,6 +101,10 @@ defmodule Toby.Data.Node do
       |> Map.merge(%{
         id: port,
         slot: info[:id],
+        memory: memory,
+        queue_size: queue_size,
+        parallelism: parallelism,
+        locking: locking,
         monitors: monitors,
         monitored_by: monitored_by
       })

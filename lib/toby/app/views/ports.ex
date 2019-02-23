@@ -3,6 +3,7 @@ defmodule Toby.App.Views.Ports do
   Builds a view for displaying information about ports
   """
 
+  import Toby.Util.Formatting, only: [format_bytes: 1]
   import Ratatouille.Constants, only: [attribute: 1, color: 1]
   import Ratatouille.View
 
@@ -39,11 +40,11 @@ defmodule Toby.App.Views.Ports do
 
             for port <- ports_slice do
               table_row(if(port == selected, do: @style_selected, else: [])) do
-                table_cell(content: inspect(port.id))
-                table_cell(content: inspect(port.connected))
-                table_cell(content: "TODO")
-                table_cell(content: to_string(port.name))
-                table_cell(content: to_string(port.slot))
+                table_cell(content: inspect(port[:id]))
+                table_cell(content: inspect(port[:connected]))
+                table_cell(content: to_string(port[:registered_name]))
+                table_cell(content: to_string(port[:name]))
+                table_cell(content: to_string(port[:slot]))
               end
             end
           end
@@ -81,22 +82,22 @@ defmodule Toby.App.Views.Ports do
 
         table_row do
           table_cell(content: "Parallelism")
-          table_cell(content: "TODO")
+          table_cell(content: to_string(port[:parallelism]))
         end
 
         table_row do
           table_cell(content: "Locking")
-          table_cell(content: "TODO")
+          table_cell(content: to_string(port[:locking]))
         end
 
         table_row do
           table_cell(content: "Queue Size")
-          table_cell(content: "TODO")
+          table_cell(content: format_bytes(port[:queue_size]))
         end
 
         table_row do
           table_cell(content: "Memory")
-          table_cell(content: "TODO")
+          table_cell(content: format_bytes(port[:memory]))
         end
       end
 
