@@ -2,7 +2,7 @@ defmodule Toby.App.Views.Tables do
   @moduledoc """
   Builds a view for displaying information about ETS tables
 
-  TODO: Show Mnesia tables
+  TODO: Show DETS & Mnesia tables
   """
 
   alias Toby.Util.Selection
