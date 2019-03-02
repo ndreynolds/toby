@@ -24,8 +24,8 @@ defmodule Toby.Mixfile do
   defp deps do
     [
       {:ratatouille, git: "https://github.com/ndreynolds/ratatouille"},
-      {:credo, "~> 1.0", runtime: false},
-      {:distillery, "~> 2.0"}
+      {:distillery, "~> 2.0", runtime: false},
+      {:credo, "~> 1.0", only: [:dev, :test], runtime: false}
     ]
   end
 
