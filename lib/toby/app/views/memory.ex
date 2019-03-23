@@ -3,33 +3,46 @@ defmodule Toby.App.Views.Memory do
   TODO: Builds a view for displaying information about memory usage
   """
 
+  alias Toby.Util.Selection
+
   import Ratatouille.View
-  import Ratatouille.Constants, only: [attribute: 1]
+  import Ratatouille.Constants, only: [attribute: 1, color: 1]
 
   @bold attribute(:bold)
 
-  def render(%{data: %{allocators: allocators, allocation_history: history}}) do
-    series_names = Map.keys(allocators)
+  @style_selected [
+    color: color(:black),
+    background: color(:white)
+  ]
+
+  def render(%{data: %{allocators: allocators, allocator_names: allocator_names, allocation_history: history},
+        cursor: %{position: position}}) do
+
+    opts = Enum.with_index(allocator_names)
+    visible_opts = Selection.slice(opts, 10, position)
+    selected_opt = Enum.at(allocator_names, position)
+
+    series = for val <- history, do: val[selected_opt]
 
     row do
       column(size: 12) do
-        row do
-          column(size: 8) do
-            panel title: "Carrier Size (MB)" do
-              chart(type: :line, series: fill_series(history), height: 8)
+        panel title: "Carriers" do
+          row do
+            column(size: 8) do
+              label(content: "Size (MB)", attributes: [attribute(:bold)])
+              chart(type: :line, series: fill_series(series), height: 8)
+
+              label(content: "Utilization (%) (TODO)", attributes: [attribute(:bold)])
+              chart(type: :line, series: fill_series(series), height: 8)
             end
 
-            panel title: "Carrier Utilization (%) (TODO)" do
-              chart(type: :line, series: fill_series(history), height: 8)
-            end
-          end
-
-          column(size: 4) do
-            panel title: "Selection" do
-              table do
-                for name <- series_names do
-                  table_row do
-                    table_cell(content: to_string(name))
+            column(size: 4) do
+              panel title: "Selection", height: 14 do
+                table do
+                  for {name, idx} <- visible_opts do
+                    table_row(if(idx == position, do: @style_selected, else: [])) do
+                      table_cell(content: to_string(name))
+                    end
                   end
                 end
               end

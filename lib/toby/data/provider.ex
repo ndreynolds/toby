@@ -58,9 +58,12 @@ defmodule Toby.Data.Provider do
   end
 
   def provide({node, :memory}, samples) do
+    allocators = Node.allocators(node)
+
     {:ok,
      %{
-       allocators: Node.allocators(node),
+       allocators: allocators,
+       allocator_names: ["Total" | Map.keys(allocators) -- ["Total"]],
        allocation_history: Samples.historical_allocation(samples)
      }}
   end

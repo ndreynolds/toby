@@ -182,7 +182,7 @@ defmodule Toby.Data.Node do
         end
       )
 
-    Map.merge(allocs, %{total: total})
+    Map.merge(allocs, %{"Total" => total})
   end
 
   @doc """

@@ -41,7 +41,9 @@ defmodule Toby.App.Views.Applications do
   end
 
   defp render_app_details(%{process_tree: tree}) when is_tuple(tree) do
-    tree([to_tree_node(tree)])
+    tree do
+      to_tree_node(tree)
+    end
   end
 
   defp render_app_details(_app_without_tree) do

@@ -57,7 +57,7 @@ defmodule Toby.App do
       tabs: %{
         system: %{data: :not_loaded},
         load: %{data: :not_loaded, cursor: @init_cursor},
-        memory: %{data: :not_loaded},
+        memory: %{data: :not_loaded, cursor: @init_cursor},
         applications: %{data: :not_loaded, cursor: @init_cursor},
         processes: %{data: :not_loaded, cursor: @init_cursor},
         ports: %{data: :not_loaded, cursor: @init_cursor},

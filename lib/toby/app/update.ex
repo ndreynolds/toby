@@ -143,6 +143,12 @@ defmodule Toby.App.Update do
     |> update_in([:tabs, :load, :cursor], &Cursor.put_size(&1, data.scheduler_count + 1))
   end
 
+  def refresh(model, :memory, data) do
+    model
+    |> put_in([:tabs, :memory, :data], data)
+    |> update_in([:tabs, :memory, :cursor], &Cursor.put_size(&1, length(data.allocator_names)))
+  end
+
   def refresh(model, :tables, data) do
     model
     |> put_in([:tabs, :tables, :data], data)
