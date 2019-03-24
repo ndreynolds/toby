@@ -8,12 +8,13 @@ defmodule Toby.App.Views.StatusBar do
 
   @tabs [
     {:system, "[S]ystem"},
-    {:load, "[L]oad Charts"},
+    {:load, "L[o]ad Charts"},
     {:memory, "[M]emory Allocators"},
     {:applications, "[A]pplications"},
     {:processes, "[P]rocesses"},
     {:ports, "Po[r]ts"},
-    {:tables, "[T]ables"}
+    {:tables, "[T]ables"},
+    {:help, "[?]"}
   ]
 
   @style_selected [

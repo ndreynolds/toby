@@ -30,4 +30,8 @@ defmodule Toby do
     # rather annoying lag when quitting the terminal application.
     System.halt()
   end
+
+  @version Mix.Project.config()[:version]
+
+  def version(), do: @version
 end

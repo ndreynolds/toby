@@ -11,6 +11,7 @@ defmodule Toby.App do
 
   alias Toby.App.Views.{
     Applications,
+    Help,
     Load,
     Memory,
     MenuBar,
@@ -31,8 +32,8 @@ defmodule Toby.App do
   @tab_keymap %{
     ?s => :system,
     ?S => :system,
-    ?l => :load,
-    ?L => :load,
+    ?o => :load,
+    ?O => :load,
     ?m => :memory,
     ?M => :memory,
     ?a => :applications,
@@ -42,7 +43,9 @@ defmodule Toby.App do
     ?r => :ports,
     ?R => :ports,
     ?t => :tables,
-    ?T => :tables
+    ?T => :tables,
+    ?? => :help,
+    ?H => :help
   }
   @tab_keys Map.keys(@tab_keymap)
 
@@ -61,7 +64,8 @@ defmodule Toby.App do
         applications: %{data: :not_loaded, cursor: @init_cursor},
         processes: %{data: :not_loaded, cursor: @init_cursor},
         ports: %{data: :not_loaded, cursor: @init_cursor},
-        tables: %{data: :not_loaded, cursor: @init_cursor}
+        tables: %{data: :not_loaded, cursor: @init_cursor},
+        help: %{data: :not_loaded}
       },
       node: %{data: :not_loaded, cursor: @init_cursor},
       search: %{
@@ -178,6 +182,9 @@ defmodule Toby.App do
 
       :tables ->
         Tables.render(model.tabs.tables, model.window)
+
+      :help ->
+        Help.render(model.tabs.help)
     end
   end
 

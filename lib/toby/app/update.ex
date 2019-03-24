@@ -146,7 +146,10 @@ defmodule Toby.App.Update do
   def refresh(model, :memory, data) do
     model
     |> put_in([:tabs, :memory, :data], data)
-    |> update_in([:tabs, :memory, :cursor], &Cursor.put_size(&1, length(data.allocator_names)))
+    |> update_in(
+      [:tabs, :memory, :cursor],
+      &Cursor.put_size(&1, length(data.allocator_names))
+    )
   end
 
   def refresh(model, :tables, data) do

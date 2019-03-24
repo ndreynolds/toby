@@ -75,6 +75,10 @@ defmodule Toby.Data.Provider do
      }}
   end
 
+  def provide({_node, :help}, _) do
+    {:ok, %{version: Toby.version()}}
+  end
+
   def provide({node, :application, app}, _) do
     Applications.application(node, app)
   end

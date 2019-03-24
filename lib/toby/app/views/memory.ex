@@ -15,9 +15,14 @@ defmodule Toby.App.Views.Memory do
     background: color(:white)
   ]
 
-  def render(%{data: %{allocators: allocators, allocator_names: allocator_names, allocation_history: history},
-        cursor: %{position: position}}) do
-
+  def render(%{
+        data: %{
+          allocators: allocators,
+          allocator_names: allocator_names,
+          allocation_history: history
+        },
+        cursor: %{position: position}
+      }) do
     opts = Enum.with_index(allocator_names)
     visible_opts = Selection.slice(opts, 10, position)
     selected_opt = Enum.at(allocator_names, position)
