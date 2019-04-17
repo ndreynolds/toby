@@ -28,6 +28,8 @@ defmodule Toby.App do
 
   @arrow_up key(:arrow_up)
   @arrow_down key(:arrow_down)
+  @arrow_left key(:arrow_left)
+  @arrow_right key(:arrow_right)
 
   @tab_keymap %{
     ?s => :system,
@@ -59,15 +61,19 @@ defmodule Toby.App do
       overlay: nil,
       tabs: %{
         system: %{data: :not_loaded},
-        load: %{data: :not_loaded, cursor: @init_cursor},
-        memory: %{data: :not_loaded, cursor: @init_cursor},
-        applications: %{data: :not_loaded, cursor: @init_cursor},
-        processes: %{data: :not_loaded, cursor: @init_cursor},
-        ports: %{data: :not_loaded, cursor: @init_cursor},
-        tables: %{data: :not_loaded, cursor: @init_cursor},
+        load: %{data: :not_loaded, cursor_y: @init_cursor},
+        memory: %{data: :not_loaded, cursor_y: @init_cursor},
+        applications: %{
+          data: :not_loaded,
+          cursors_y: [@init_cursor, @init_cursor],
+          cursor_x: %{@init_cursor | size: 2}
+        },
+        processes: %{data: :not_loaded, cursor_y: @init_cursor},
+        ports: %{data: :not_loaded, cursor_y: @init_cursor},
+        tables: %{data: :not_loaded, cursor_y: @init_cursor},
         help: %{data: :not_loaded}
       },
-      node: %{data: :not_loaded, cursor: @init_cursor},
+      node: %{data: :not_loaded, cursor_y: @init_cursor},
       search: %{
         focused: false,
         query: ""
@@ -109,10 +115,16 @@ defmodule Toby.App do
       ## Move the active cursor:
 
       {_, {:event, %{ch: ch, key: key}}} when ch == ?j or key == @arrow_down ->
-        Update.move_cursor(model, [:tabs, model.selected_tab, :cursor], :next)
+        Update.move_cursor(model, [:tabs, model.selected_tab, :cursor_y], :next)
 
       {_, {:event, %{ch: ch, key: key}}} when ch == ?k or key == @arrow_up ->
-        Update.move_cursor(model, [:tabs, model.selected_tab, :cursor], :prev)
+        Update.move_cursor(model, [:tabs, model.selected_tab, :cursor_y], :prev)
+
+      {_, {:event, %{ch: ch, key: key}}} when ch == ?h or key == @arrow_left ->
+        Update.move_cursor(model, [:tabs, model.selected_tab, :cursor_x], :prev)
+
+      {_, {:event, %{ch: ch, key: key}}} when ch == ?l or key == @arrow_right ->
+        Update.move_cursor(model, [:tabs, model.selected_tab, :cursor_x], :next)
 
       ## Update the window in response to resize:
 

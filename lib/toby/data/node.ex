@@ -33,6 +33,22 @@ defmodule Toby.Data.Node do
     call(node, :scheduler, :sample)
   end
 
+  def lookup(node, name) when is_atom(name) do
+    lookup(node, where_is(node, name))
+  end
+
+  def lookup(node, pid) when is_pid(pid) do
+    Map.merge(process_info_extended(node, pid), %{type: :process})
+  end
+
+  def lookup(node, port) when is_port(port) do
+    Map.merge(port_info_extended(node, port), %{type: :port})
+  end
+
+  def lookup(_node, nil) do
+    nil
+  end
+
   # Processes
 
   def processes(node) do

@@ -20,7 +20,7 @@ defmodule Toby.App.Views.Tables do
     background: color(:white)
   ]
 
-  def render(%{data: %{tables: tables}, cursor: cursor}, window) do
+  def render(%{data: %{tables: tables}, cursor_y: cursor}, window) do
     tables_slice = Selection.slice(tables, window.height - @frame_rows, cursor.position)
 
     selected = Enum.at(tables, cursor.position)

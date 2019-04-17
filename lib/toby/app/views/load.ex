@@ -20,7 +20,7 @@ defmodule Toby.App.Views.Load do
           memory: memory,
           io: io
         },
-        cursor: %{position: position}
+        cursor_y: %{position: position}
       })
       when position <= 8 do
     util_opts = build_utilization_opts(scheduler_count)

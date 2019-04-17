@@ -4,6 +4,7 @@ defmodule Toby.Data.Applications do
   """
 
   alias Toby.Data.Node
+  alias Toby.Util.Tree
 
   def applications(node) do
     {:ok, applications_in_tree(node)}
@@ -11,10 +12,19 @@ defmodule Toby.Data.Applications do
 
   def application(node, app) do
     with {:ok, data} <- Node.application(node, app) do
+      {tree, tree_last_idx} =
+        node
+        |> application_process_tree(app)
+        |> Tree.to_indexed_tree()
+
       app_data =
         data
         |> Enum.into(%{})
-        |> Map.merge(%{name: app, process_tree: application_process_tree(node, app)})
+        |> Map.merge(%{
+          name: app,
+          process_tree: tree,
+          process_tree_size: tree_last_idx
+        })
 
       {:ok, app_data}
     else

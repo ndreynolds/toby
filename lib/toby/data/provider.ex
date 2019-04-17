@@ -19,6 +19,10 @@ defmodule Toby.Data.Provider do
      }}
   end
 
+  def provide({node, :lookup, proc_or_port_or_name}, _) do
+    {:ok, Node.lookup(node, proc_or_port_or_name)}
+  end
+
   def provide({node, :processes}, _) do
     {:ok, %{processes: Node.processes_extended(node)}}
   end
@@ -34,6 +38,10 @@ defmodule Toby.Data.Provider do
          applications: Enum.sort_by(apps, &to_string/1)
        }}
     end
+  end
+
+  def provide({node, :application, app}, _) do
+    Applications.application(node, app)
   end
 
   def provide({node, :system}, _) do
@@ -77,10 +85,6 @@ defmodule Toby.Data.Provider do
 
   def provide({_node, :help}, _) do
     {:ok, %{version: Toby.version()}}
-  end
-
-  def provide({node, :application, app}, _) do
-    Applications.application(node, app)
   end
 
   def provide(_other_key, _) do

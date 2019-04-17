@@ -4,7 +4,7 @@ defmodule Toby.App.Update do
   """
 
   alias Toby.Data.Server, as: Data
-  alias Toby.Util.Cursor
+  alias Toby.Util.{Cursor, Tree}
 
   alias Ratatouille.Runtime.Command
 
@@ -57,11 +57,11 @@ defmodule Toby.App.Update do
   end
 
   def overlay_action(%{overlay: :node_selection} = model, %{ch: ch}) when ch == ?j do
-    move_cursor(model, [:node, :cursor], :next)
+    move_cursor(model, [:node, :cursor_y], :next)
   end
 
   def overlay_action(%{overlay: :node_selection} = model, %{ch: ch}) when ch == ?k do
-    move_cursor(model, [:node, :cursor], :prev)
+    move_cursor(model, [:node, :cursor_y], :prev)
   end
 
   def overlay_action(model, %{key: @escape}) do
@@ -70,6 +70,39 @@ defmodule Toby.App.Update do
 
   def overlay_action(model, _event) do
     model
+  end
+
+  # TODO: Would this be a useful abstraction? The applications UI is really just
+  # a tree view where you can drill down into nodes (apps -> app -> process).
+  #
+  # It might be helpful for each view to define a more structured interface for
+  # how it handles cursor events (with defaults for common use cases).
+  def move_cursor(model, [:tabs, :applications, :cursor_x], direction) do
+    tab = model.tabs.applications
+    cursor_x = new_cursor(tab.cursor_x, direction)
+
+    cursors_y =
+      for {cursor, i} <- Enum.with_index(tab.cursors_y) do
+        if i > cursor_x.position, do: Cursor.reset(cursor), else: cursor
+      end
+
+    new_model =
+      model
+      |> put_in([:tabs, :applications, :cursor_x], cursor_x)
+      |> put_in([:tabs, :applications, :cursors_y], cursors_y)
+
+    {new_model, request_refresh(new_model, new_model.selected_tab)}
+  end
+
+  def move_cursor(model, [:tabs, :applications, :cursor_y], direction) do
+    tab = model.tabs.applications
+    cursor_x = tab.cursor_x
+
+    cursors_y =
+      List.update_at(tab.cursors_y, cursor_x.position, &new_cursor(&1, direction))
+
+    new_model = put_in(model, [:tabs, :applications, :cursors_y], cursors_y)
+    {new_model, request_refresh(new_model, new_model.selected_tab)}
   end
 
   def move_cursor(model, cursor_path, direction) do
@@ -89,17 +122,29 @@ defmodule Toby.App.Update do
   def request_refresh(model, :applications) do
     Command.new(
       fn ->
-        data = Data.fetch!({model.selected_node, :applications})
+        %{applications: applications} = Data.fetch!({model.selected_node, :applications})
 
-        cursor =
-          Cursor.put_size(model.tabs.applications.cursor, length(data.applications))
+        [app_cursor, proc_cursor] = model.tabs.applications.cursors_y
 
-        selected = Enum.at(data.applications, cursor.position)
-        selected_data = Data.fetch!({model.selected_node, :application, selected})
+        selected_app_id = Enum.at(applications, app_cursor.position)
+        selected_app = Data.fetch!({model.selected_node, :application, selected_app_id})
+
+        selected_proc =
+          case selected_app do
+            nil ->
+              nil
+
+            app ->
+              {{selected_proc_id, _}, _} =
+                Tree.node_at(app.process_tree, proc_cursor.position)
+
+              Data.fetch!({model.selected_node, :lookup, selected_proc_id})
+          end
 
         %{
-          applications: data.applications,
-          selected_application: selected_data
+          applications: applications,
+          selected_application: selected_app,
+          selected_process: selected_proc
         }
       end,
       {:refreshed, :applications}
@@ -115,7 +160,7 @@ defmodule Toby.App.Update do
 
   def refresh(model, :node, data) do
     model
-    |> update_in([:node, :cursor], &Cursor.put_size(&1, length(data.connected_nodes)))
+    |> update_in([:node, :cursor_y], &Cursor.put_size(&1, length(data.connected_nodes)))
     |> put_in([:node, :data], data)
   end
 
@@ -125,7 +170,7 @@ defmodule Toby.App.Update do
     model
     |> put_in([:tabs, :processes, :data], data)
     |> update_in(
-      [:tabs, :processes, :cursor],
+      [:tabs, :processes, :cursor_y],
       &Cursor.put_size(&1, length(data.processes))
     )
     |> put_in([:tabs, :processes, :filtered], filtered_processes)
@@ -134,20 +179,23 @@ defmodule Toby.App.Update do
   def refresh(model, :ports, data) do
     model
     |> put_in([:tabs, :ports, :data], data)
-    |> update_in([:tabs, :ports, :cursor], &Cursor.put_size(&1, length(data.ports)))
+    |> update_in([:tabs, :ports, :cursor_y], &Cursor.put_size(&1, length(data.ports)))
   end
 
   def refresh(model, :load, data) do
     model
     |> put_in([:tabs, :load, :data], data)
-    |> update_in([:tabs, :load, :cursor], &Cursor.put_size(&1, data.scheduler_count + 1))
+    |> update_in(
+      [:tabs, :load, :cursor_y],
+      &Cursor.put_size(&1, data.scheduler_count + 1)
+    )
   end
 
   def refresh(model, :memory, data) do
     model
     |> put_in([:tabs, :memory, :data], data)
     |> update_in(
-      [:tabs, :memory, :cursor],
+      [:tabs, :memory, :cursor_y],
       &Cursor.put_size(&1, length(data.allocator_names))
     )
   end
@@ -155,15 +203,23 @@ defmodule Toby.App.Update do
   def refresh(model, :tables, data) do
     model
     |> put_in([:tabs, :tables, :data], data)
-    |> update_in([:tabs, :tables, :cursor], &Cursor.put_size(&1, length(data.tables)))
+    |> update_in([:tabs, :tables, :cursor_y], &Cursor.put_size(&1, length(data.tables)))
   end
 
   def refresh(model, :applications, data) do
     model
     |> put_in([:tabs, :applications, :data], data)
     |> update_in(
-      [:tabs, :applications, :cursor],
-      &Cursor.put_size(&1, length(data.applications))
+      [:tabs, :applications, :cursors_y],
+      fn [app_cursor, app_tree_cursor] ->
+        [
+          Cursor.put_size(app_cursor, length(data.applications)),
+          case data.selected_application do
+            nil -> app_tree_cursor
+            app -> Cursor.put_size(app_tree_cursor, app.process_tree_size)
+          end
+        ]
+      end
     )
   end
 

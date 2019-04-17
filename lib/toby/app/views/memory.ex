@@ -21,7 +21,7 @@ defmodule Toby.App.Views.Memory do
           allocator_names: allocator_names,
           allocation_history: history
         },
-        cursor: %{position: position}
+        cursor_y: %{position: position}
       }) do
     opts = Enum.with_index(allocator_names)
     visible_opts = Selection.slice(opts, 10, position)

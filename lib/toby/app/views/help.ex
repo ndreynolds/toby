@@ -5,7 +5,6 @@ defmodule Toby.App.Views.Help do
 
   import Ratatouille.View
   import Ratatouille.Constants, only: [attribute: 1]
-  import Toby.Util.Formatting
 
   @bold attribute(:bold)
 

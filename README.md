@@ -3,8 +3,9 @@
 A WIP terminal-based observer for the Erlang VM. Just an early prototype here
 so far.
 
-It's being developed in parallel with [ExTermbox][1] and [Ratatouille][2], which
-respectively provide termbox bindings and a terminal UI kit for Elixir / Erlang.
+It's being developed in parallel with [ex_termbox][1] and [Ratatouille][2],
+which respectively provide termbox bindings and a terminal UI kit for Elixir /
+Erlang.
 
 ![Applications Tab](doc/applications.png)
 ![Load Tab](doc/load-charts.png)
@@ -86,10 +87,10 @@ segfault in the observer node, it should not affect the node(s) being observed.
   * [x] Applications
   * [x] Processes
   * [x] Ports
-  * [ ] Tables
+  * [x] Tables
   * [x] Node information
 * [ ] Support connecting to other nodes:
-  * [ ] Via the application UI
+  * [x] Via the application UI
   * [ ] Via the CLI
 * [ ] Actions on applications, ports, processes and tables.
 * [ ] Tracing integration

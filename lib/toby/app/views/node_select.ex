@@ -17,7 +17,7 @@ defmodule Toby.App.Views.NodeSelect do
           cookie: cookie,
           connected_nodes: connected
         },
-        cursor: cursor
+        cursor_y: cursor
       }) do
     panel(title: "Node Selection (<ESC> to close)", height: :fill) do
       panel(title: "Current") do

@@ -19,6 +19,10 @@ defmodule Toby.Util.Cursor do
     %{cursor | position: cursor.position - 1}
   end
 
+  def reset(cursor) do
+    %{cursor | position: 0}
+  end
+
   def put_size(%{position: position} = cursor, size) when position > size - 1 do
     %{cursor | position: size - 1, size: size}
   end

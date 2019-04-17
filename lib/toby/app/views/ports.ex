@@ -22,7 +22,7 @@ defmodule Toby.App.Views.Ports do
   # The number of rows that make up the application and table frame
   @frame_rows 7
 
-  def render(%{data: %{ports: ports}, cursor: cursor}, window) do
+  def render(%{data: %{ports: ports}, cursor_y: cursor}, window) do
     ports_slice = Selection.slice(ports, window.height - @frame_rows, cursor.position)
     selected = Enum.at(ports, cursor.position)
 
@@ -52,12 +52,12 @@ defmodule Toby.App.Views.Ports do
       end
 
       column(size: 4) do
-        render_port_details(selected)
+        port_details(selected)
       end
     end
   end
 
-  defp render_port_details(%{id: id} = port) do
+  def port_details(%{id: id} = port) do
     panel(title: inspect(id), height: :fill) do
       table do
         table_row do
@@ -107,7 +107,7 @@ defmodule Toby.App.Views.Ports do
     end
   end
 
-  defp render_port_details(nil) do
+  def port_details(nil) do
     panel(title: "(None selected)", height: :fill)
   end
 end

@@ -28,7 +28,7 @@ defmodule Toby.App.Views.Processes do
   # model in order to calculate this dynamically.
   @frame_rows 7
 
-  def render(%{filtered: processes, cursor: cursor}, window) do
+  def render(%{filtered: processes, cursor_y: cursor}, window) do
     processes_slice =
       Selection.slice(processes, window.height - @frame_rows, cursor.position)
 
@@ -62,12 +62,12 @@ defmodule Toby.App.Views.Processes do
       end
 
       column(size: 4) do
-        render_process_details(selected)
+        process_details(selected)
       end
     end
   end
 
-  defp render_process_details(%{pid: pid} = process) do
+  def process_details(%{pid: pid} = process) do
     title = inspect(pid) <> " " <> name_or_initial_func(process)
 
     panel(title: title, height: :fill) do
@@ -134,7 +134,7 @@ defmodule Toby.App.Views.Processes do
     end
   end
 
-  defp render_process_details(nil) do
+  def process_details(nil) do
     panel(title: "(None selected)", height: :fill)
   end
 
