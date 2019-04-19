@@ -7,10 +7,7 @@ It's being developed in parallel with [ex_termbox][1] and [Ratatouille][2],
 which respectively provide termbox bindings and a terminal UI kit for Elixir /
 Erlang.
 
-![Applications Tab](doc/applications.png)
-![Load Tab](doc/load-charts.png)
-![Processes Tab](doc/processes.png)
-![System Tab](doc/system.png)
+![Demo Animation](doc/demo.svg)
 
 ## Running It
 
