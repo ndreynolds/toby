@@ -29,9 +29,10 @@ defmodule Toby.App.Views.Help do
         control_label("H ?", "Help              (Shows this help screen)")
         label()
         label(content: "Navigation / Actions")
-        control_label("UP/DOWN j/k", "Scroll content")
-        control_label("/          ", "Search/filter content (when supported)")
-        control_label("ESC        ", "Cancel/exit an overlay or action")
+        control_label("UP/DOWN j/k   ", "Scroll vertically")
+        control_label("LEFT/RIGHT h/l", "Scroll horizontally (when supported)")
+        control_label("/             ", "Search/filter content (when supported)")
+        control_label("ESC           ", "Cancel/exit an overlay or action")
       end
     end
   end
