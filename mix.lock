@@ -2,10 +2,10 @@
   "artificery": {:hex, :artificery, "0.2.6", "f602909757263f7897130cbd006b0e40514a541b148d366ad65b89236b93497a", [:mix], [], "hexpm"},
   "asciichart": {:hex, :asciichart, "1.0.0", "6ef5dbeab545cb7a0bdce7235958f129de6cd8ad193684dc0953c9a8b4c3db5b", [:mix], [], "hexpm"},
   "bunt": {:hex, :bunt, "0.2.0", "951c6e801e8b1d2cbe58ebbd3e616a869061ddadcc4863d0a2182541acae9a38", [:mix], [], "hexpm"},
-  "credo": {:hex, :credo, "1.0.2", "88bc918f215168bf6ce7070610a6173c45c82f32baa08bdfc80bf58df2d103b6", [:mix], [{:bunt, "~> 0.2.0", [hex: :bunt, repo: "hexpm", optional: false]}, {:jason, "~> 1.0", [hex: :jason, repo: "hexpm", optional: false]}], "hexpm"},
+  "credo": {:hex, :credo, "1.0.5", "fdea745579f8845315fe6a3b43e2f9f8866839cfbc8562bb72778e9fdaa94214", [:mix], [{:bunt, "~> 0.2.0", [hex: :bunt, repo: "hexpm", optional: false]}, {:jason, "~> 1.0", [hex: :jason, repo: "hexpm", optional: false]}], "hexpm"},
   "distillery": {:hex, :distillery, "2.0.12", "6e78fe042df82610ac3fa50bd7d2d8190ad287d120d3cd1682d83a44e8b34dfb", [:mix], [{:artificery, "~> 0.2", [hex: :artificery, repo: "hexpm", optional: false]}], "hexpm"},
   "elixir_make": {:hex, :elixir_make, "0.5.2", "96a28c79f5b8d34879cd95ebc04d2a0d678cfbbd3e74c43cb63a76adf0ee8054", [:mix], [], "hexpm"},
   "ex_termbox": {:hex, :ex_termbox, "1.0.0", "6f26a0cdc787c0685732649beee6973248504fc689776cf57a485422be8dac4b", [:make, :mix], [{:elixir_make, "~> 0.4", [hex: :elixir_make, repo: "hexpm", optional: false]}], "hexpm"},
   "jason": {:hex, :jason, "1.1.2", "b03dedea67a99223a2eaf9f1264ce37154564de899fd3d8b9a21b1a6fd64afe7", [:mix], [{:decimal, "~> 1.0", [hex: :decimal, repo: "hexpm", optional: true]}], "hexpm"},
-  "ratatouille": {:git, "https://github.com/ndreynolds/ratatouille", "47fbd7169e16622b7efbcb6f5caa3f70b9f92257", []},
+  "ratatouille": {:hex, :ratatouille, "0.5.0", "e843c2dbc0293438865361c4e4fecf5bab702563e490d67dee85edcabf15ac1d", [:mix], [{:asciichart, "~> 1.0", [hex: :asciichart, repo: "hexpm", optional: false]}, {:ex_termbox, "~> 1.0", [hex: :ex_termbox, repo: "hexpm", optional: false]}], "hexpm"},
 }
