@@ -51,7 +51,7 @@ defmodule Toby.App do
   }
   @tab_keys Map.keys(@tab_keymap)
 
-  @init_cursor %{position: 0, size: 0}
+  @init_cursor %{position: 0, size: 0, continuous: true}
 
   @impl true
   def init(%{window: window}) do
@@ -66,9 +66,13 @@ defmodule Toby.App do
         applications: %{
           data: :not_loaded,
           cursors_y: [@init_cursor, @init_cursor],
-          cursor_x: %{@init_cursor | size: 2}
+          cursor_x: %{@init_cursor | size: 2, continuous: false}
         },
-        processes: %{data: :not_loaded, cursor_y: @init_cursor},
+        processes: %{
+          data: :not_loaded,
+          cursor_y: @init_cursor,
+          cursor_x: %{@init_cursor | size: 30, continuous: false}
+        },
         ports: %{data: :not_loaded, cursor_y: @init_cursor},
         tables: %{data: :not_loaded, cursor_y: @init_cursor},
         help: %{data: :not_loaded}

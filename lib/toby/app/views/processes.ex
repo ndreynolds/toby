@@ -28,33 +28,35 @@ defmodule Toby.App.Views.Processes do
   # model in order to calculate this dynamically.
   @frame_rows 7
 
-  def render(%{filtered: processes, cursor_y: cursor}, window) do
+  def render(%{filtered: processes, cursor_x: cursor_x, cursor_y: cursor_y}, window) do
     processes_slice =
-      Selection.slice(processes, window.height - @frame_rows, cursor.position)
+      Selection.slice(processes, window.height - @frame_rows, cursor_y.position)
 
-    selected = Enum.at(processes, cursor.position)
+    selected = Enum.at(processes, cursor_y.position)
 
     row do
       column(size: 8) do
         panel(title: "Processes", height: :fill) do
-          table do
-            table_row(@style_header) do
-              table_cell(content: "PID")
-              table_cell(content: "Name or Initial Func")
-              table_cell(content: "Reds")
-              table_cell(content: "Memory")
-              table_cell(content: "MsgQ")
-              table_cell(content: "Current Function")
-            end
+          viewport(offset_x: cursor_x.position) do
+            table do
+              table_row(@style_header) do
+                table_cell(content: "PID")
+                table_cell(content: "Name or Initial Func")
+                table_cell(content: "Reds")
+                table_cell(content: "Memory")
+                table_cell(content: "MsgQ")
+                table_cell(content: "Current Function")
+              end
 
-            for proc <- processes_slice do
-              table_row(if(proc == selected, do: @style_selected, else: [])) do
-                table_cell(content: inspect(proc.pid))
-                table_cell(content: name_or_initial_func(proc))
-                table_cell(content: to_string(proc[:reductions]))
-                table_cell(content: inspect(proc[:memory]))
-                table_cell(content: to_string(proc[:message_queue_len]))
-                table_cell(content: format_func(proc[:current_function]))
+              for proc <- processes_slice do
+                table_row(if(proc == selected, do: @style_selected, else: [])) do
+                  table_cell(content: inspect(proc.pid))
+                  table_cell(content: name_or_initial_func(proc))
+                  table_cell(content: to_string(proc[:reductions]))
+                  table_cell(content: inspect(proc[:memory]))
+                  table_cell(content: to_string(proc[:message_queue_len]))
+                  table_cell(content: format_func(proc[:current_function]))
+                end
               end
             end
           end
