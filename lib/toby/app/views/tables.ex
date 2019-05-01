@@ -20,7 +20,7 @@ defmodule Toby.App.Views.Tables do
     background: color(:white)
   ]
 
-  def render(%{data: %{tables: tables}, cursor_y: cursor}, window) do
+  def render(%{data: %{tables: tables}, cursor_x: cursor_x, cursor_y: cursor}, window) do
     tables_slice = Selection.slice(tables, window.height - @frame_rows, cursor.position)
 
     selected = Enum.at(tables, cursor.position)
@@ -28,24 +28,26 @@ defmodule Toby.App.Views.Tables do
     row do
       column(size: 8) do
         panel title: "Tables (ETS)", height: :fill do
-          table do
-            table_row(attributes: [@bold]) do
-              table_cell(content: "Name")
-              table_cell(content: "Objects")
-              table_cell(content: "Size")
-              table_cell(content: "Owner PID")
-              table_cell(content: "Owner Name")
-              table_cell(content: "Table ID")
-            end
+          viewport(offset_x: cursor_x.position) do
+            table do
+              table_row(attributes: [@bold]) do
+                table_cell(content: "Name")
+                table_cell(content: "Objects")
+                table_cell(content: "Size")
+                table_cell(content: "Owner PID")
+                table_cell(content: "Owner Name")
+                table_cell(content: "Table ID")
+              end
 
-            for tab <- tables_slice do
-              table_row(if(tab == selected, do: @style_selected, else: [])) do
-                table_cell(content: to_string(tab[:name]))
-                table_cell(content: to_string(tab[:size]))
-                table_cell(content: format_bytes(tab[:memory]))
-                table_cell(content: inspect(tab[:owner]))
-                table_cell(content: to_string(tab[:owner_name]))
-                table_cell(content: inspect(tab[:id]))
+              for tab <- tables_slice do
+                table_row(if(tab == selected, do: @style_selected, else: [])) do
+                  table_cell(content: to_string(tab[:name]))
+                  table_cell(content: to_string(tab[:size]))
+                  table_cell(content: format_bytes(tab[:memory]))
+                  table_cell(content: inspect(tab[:owner]))
+                  table_cell(content: to_string(tab[:owner_name]))
+                  table_cell(content: inspect(tab[:id]))
+                end
               end
             end
           end

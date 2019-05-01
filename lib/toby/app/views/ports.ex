@@ -22,29 +22,31 @@ defmodule Toby.App.Views.Ports do
   # The number of rows that make up the application and table frame
   @frame_rows 7
 
-  def render(%{data: %{ports: ports}, cursor_y: cursor}, window) do
+  def render(%{data: %{ports: ports}, cursor_x: cursor_x, cursor_y: cursor}, window) do
     ports_slice = Selection.slice(ports, window.height - @frame_rows, cursor.position)
     selected = Enum.at(ports, cursor.position)
 
     row do
       column(size: 8) do
         panel(title: "Ports", height: :fill) do
-          table do
-            table_row(@style_header) do
-              table_cell(content: "ID")
-              table_cell(content: "Connected")
-              table_cell(content: "Name")
-              table_cell(content: "Controls")
-              table_cell(content: "Slot")
-            end
+          viewport(offset_x: cursor_x.position) do
+            table do
+              table_row(@style_header) do
+                table_cell(content: "ID")
+                table_cell(content: "Connected")
+                table_cell(content: "Name")
+                table_cell(content: "Controls")
+                table_cell(content: "Slot")
+              end
 
-            for port <- ports_slice do
-              table_row(if(port == selected, do: @style_selected, else: [])) do
-                table_cell(content: inspect(port[:id]))
-                table_cell(content: inspect(port[:connected]))
-                table_cell(content: to_string(port[:registered_name]))
-                table_cell(content: to_string(port[:name]))
-                table_cell(content: to_string(port[:slot]))
+              for port <- ports_slice do
+                table_row(if(port == selected, do: @style_selected, else: [])) do
+                  table_cell(content: inspect(port[:id]))
+                  table_cell(content: inspect(port[:connected]))
+                  table_cell(content: to_string(port[:registered_name]))
+                  table_cell(content: to_string(port[:name]))
+                  table_cell(content: to_string(port[:slot]))
+                end
               end
             end
           end

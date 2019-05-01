@@ -70,11 +70,19 @@ defmodule Toby.App do
         },
         processes: %{
           data: :not_loaded,
-          cursor_y: @init_cursor,
-          cursor_x: %{@init_cursor | size: 30, continuous: false}
+          cursor_x: %{@init_cursor | size: 30, continuous: false},
+          cursor_y: @init_cursor
         },
-        ports: %{data: :not_loaded, cursor_y: @init_cursor},
-        tables: %{data: :not_loaded, cursor_y: @init_cursor},
+        ports: %{
+          data: :not_loaded,
+          cursor_x: %{@init_cursor | size: 30, continuous: false},
+          cursor_y: @init_cursor
+        },
+        tables: %{
+          data: :not_loaded,
+          cursor_x: %{@init_cursor | size: 30, continuous: false},
+          cursor_y: @init_cursor
+        },
         help: %{data: :not_loaded}
       },
       node: %{data: :not_loaded, cursor_y: @init_cursor},
